@@ -151,6 +151,29 @@ class TransactionModel {
         return $txns;
     }
     
+    // Get transactions pending refund review
+    public function getPendingRefunds($limit = 20) {
+        $stmt = $this->conn->prepare("
+            SELECT 
+                t.*,
+                DATE_FORMAT(t.created_at, '%b %d, %Y • %h:%i %p') as formatted_date
+            FROM transactions t
+            WHERE t.dispense_status = 'REFUND_PENDING'
+            ORDER BY t.created_at DESC
+            LIMIT ?
+        ");
+        if (!$stmt) return [];
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $rows = [];
+        while ($r = $res->fetch_assoc()) {
+            $rows[] = $r;
+        }
+        $stmt->close();
+        return $rows;
+    }
+
     // Get transaction count
     public function getCount() {
         $result = $this->conn->query("SELECT COUNT(*) as count FROM transactions");
