@@ -1,0 +1,18 @@
+# Protect sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes
+
+# Set default character set
+AddDefaultCharset UTF-8
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Custom error pages
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html

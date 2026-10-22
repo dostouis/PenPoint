@@ -1,0 +1,13 @@
+# Logs
+log/*.log
+*.log
+
+# Sensitive / Environment files
+.env
+config/.env
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
