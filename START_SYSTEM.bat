@@ -32,15 +32,15 @@ echo.
 echo [3/3] Launching Cloudflare Public Tunnel for Phone & ESP32 Access...
 echo      - Initializing tunnel and grabbing your live public URL...
 
-del /f /q "%TEMP%\cloudflared_penpoint.log" >nul 2>&1
-start "PenPoint Cloudflare Tunnel" cmd /c "C:\xampp\cloudflared.exe tunnel --url http://127.0.0.1:8000 2>&1 | powershell -Command "$input | Tee-Object -FilePath '%TEMP%\cloudflared_penpoint.log'""
+del /f /q "%TEMP%\cf_penpoint.log" >nul 2>&1
+start "PenPoint Cloudflare Tunnel" cmd /k "color 0E && title PenPoint Cloudflare Public Tunnel && C:\xampp\cloudflared.exe tunnel --logfile "%TEMP%\cf_penpoint.log" --url http://127.0.0.1:8000"
 
-:: Wait up to 12 seconds for the trycloudflare.com URL to appear in the log
+:: Wait up to 10 seconds for the trycloudflare.com URL to appear in the log
 set "TUNNEL_URL="
-for /L %%i in (1,1,12) do (
+for /L %%i in (1,1,10) do (
     timeout /t 1 /nobreak >nul
-    if exist "%TEMP%\cloudflared_penpoint.log" (
-        for /f "tokens=*" %%a in ('powershell -NoProfile -Command "(Get-Content '%TEMP%\cloudflared_penpoint.log' -ErrorAction SilentlyContinue | Select-String -Pattern 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | Select-Object -First 1).Matches.Value"') do (
+    if exist "%TEMP%\cf_penpoint.log" (
+        for /f "usebackq tokens=*" %%a in (`powershell -NoProfile -Command "(Get-Content -Path $env:TEMP\cf_penpoint.log -ErrorAction SilentlyContinue | Select-String -Pattern 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | Select-Object -First 1).Matches.Value"`) do (
             set "TUNNEL_URL=%%a"
         )
     )
@@ -62,12 +62,12 @@ if defined TUNNEL_URL (
     echo  %TUNNEL_URL%/public/index.php
     echo  =================================================================
     echo.
-    echo  Copying public link to clipboard...
+    echo  Copying public link to your Windows clipboard...
     echo %TUNNEL_URL%/public/index.php| clip
-    echo  [Copied to clipboard!]
+    echo  [Copied to clipboard! You can paste it directly into Messenger or your phone browser]
 ) else (
-    echo  Cloudflare is connecting in the background. Check the
-    echo  "PenPoint Cloudflare Tunnel" window for your live URL.
+    echo  Cloudflare is connecting. Look at the yellow "PenPoint Cloudflare Tunnel"
+    echo  window to see your live https://...trycloudflare.com link.
 )
 echo.
 echo  Opening Local Student Kiosk in default browser...
