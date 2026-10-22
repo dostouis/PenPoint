@@ -228,6 +228,41 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             gap: 10px;
         }
 
+        /* Retro Speaker / Audio SFX Toggle Button */
+        .retro-audio-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #181d28;
+            border: 2px solid #364157;
+            box-shadow: 0 2px 0 #11141c;
+            color: var(--retro-cream);
+            padding: 5px 10px;
+            border-radius: var(--radius-btn);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .retro-audio-toggle:hover {
+            background: #242c3d;
+            border-color: #576582;
+            color: #ffeaa7;
+        }
+
+        .retro-audio-toggle:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .retro-audio-toggle.muted {
+            opacity: 0.6;
+            color: var(--retro-text-muted);
+            border-color: #2b3345;
+        }
+
         /* Retro "ONLINE" Glowing Machine Lamp */
         .machine-lamp {
             display: flex;
@@ -1203,8 +1238,177 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             color: var(--retro-mustard);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mechanical Drop Chute Container */
+        .chute-physics-stage {
+            width: 100%;
+            max-width: 320px;
+            height: 110px;
+            background: #131720;
+            border: 2px solid #2f384d;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto 14px;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.7);
+        }
+
+        .chute-ir-beam {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 72px;
+            height: 2px;
+            background: rgba(231, 76, 60, 0.4);
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        .chute-ir-beam.beam-tripped {
+            background: #2ecc71;
+            box-shadow: 0 0 16px #2ecc71, 0 0 4px #ffffff;
+            height: 3px;
+        }
+
+        .chute-ir-beam-label {
+            position: absolute;
+            right: 8px;
+            top: 54px;
+            font-size: 0.58rem;
+            font-family: var(--font-mono);
+            color: #ff7675;
+            letter-spacing: 0.05em;
+            transition: color 0.2s;
+        }
+
+        .chute-ir-beam-label.beam-tripped {
+            color: #2ecc71;
+            font-weight: 900;
+        }
+
+        .chute-item-payload {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            transition: none;
+        }
+
+        .chute-item-payload.falling {
+            animation: chuteFall 0.85s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards,
+                       chuteBounce 0.45s 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes chuteFall {
+            0% { top: -60px; transform: translateX(-50%) rotate(0deg); }
+            100% { top: 56px; transform: translateX(-50%) rotate(6deg); }
+        }
+
+        @keyframes chuteBounce {
+            0% { transform: translateX(-50%) translateY(0) rotate(6deg); }
+            40% { transform: translateX(-50%) translateY(-14px) rotate(-3deg); }
+            70% { transform: translateX(-50%) translateY(0) rotate(2deg); }
+            85% { transform: translateX(-50%) translateY(-4px) rotate(0deg); }
+            100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+        }
+
+        /* Vintage Paper e-Receipt Printout */
+        .retro-receipt-ticket {
+            background: #fffdf7;
+            color: #12151b;
+            border: 2px dashed #b2bec3;
+            border-radius: 8px;
+            padding: 12px 14px;
+            max-width: 330px;
+            width: 100%;
+            margin: 12px auto 0;
+            text-align: left;
+            font-family: var(--font-mono);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            transform-origin: top center;
+            animation: receiptSlideDown 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes receiptSlideDown {
+            0% { opacity: 0; transform: translateY(-16px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .receipt-header-row {
+            border-bottom: 1px dashed #7f8c8d;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .receipt-title {
+            font-family: 'Dela Gothic One', sans-serif;
+            font-size: 0.95rem;
+            color: var(--retro-red-deep);
+            letter-spacing: 0.05em;
+        }
+
+        .receipt-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            margin-bottom: 4px;
+        }
+
+        .receipt-total-line {
+            border-top: 1px solid #2d3436;
+            margin-top: 6px;
+            padding-top: 6px;
+            font-weight: 900;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Search input bar */
+        .search-strip-box {
+            position: relative;
+            max-width: 280px;
+            width: 100%;
+        }
+
+        .search-retro-input {
+            width: 100%;
+            background: #171c26;
+            border: 1.5px solid #333d52;
+            color: var(--retro-cream);
+            padding: 6px 12px 6px 30px;
+            border-radius: var(--radius-pill);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            outline: none;
+            transition: all 0.15s;
+        }
+
+        .search-retro-input:focus {
+            border-color: #ffeaa7;
+            background: #1c2230;
+            box-shadow: 0 0 10px rgba(255, 234, 167, 0.2);
+        }
+
+        .search-icon-pos {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--retro-text-muted);
+            pointer-events: none;
+            width: 13px;
+            height: 13px;
         }
 
         .drop-en-title {
@@ -1449,6 +1653,10 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                 </div>
             </a>
             <div class="header-actions">
+                <button class="retro-audio-toggle" id="audioToggleBtn" onclick="toggleAudio()" title="Sound Effects">
+                    <i data-lucide="volume-2" id="audioIcon" style="width: 14px; height: 14px;"></i>
+                    <span id="audioLabel">SFX ON</span>
+                </button>
                 <div class="machine-lamp">
                     <div class="lamp-bulb"></div>
                     <span>ONLINE</span>
@@ -1546,11 +1754,17 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             <div class="inventory-title-group">
                 <h3 class="inventory-title-main">
                     <span>Available Vending Slots</span>
-                    <span class="inventory-count-tag">6 SLOTS ACTIVE</span>
+                    <span class="inventory-count-tag" id="activeSlotsCountTag">6 SLOTS ACTIVE</span>
                 </h3>
             </div>
-            <div class="inventory-machine-tag">
-                <?= htmlspecialchars($machine_id) ?> • 4 TIERS
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <div class="search-strip-box">
+                    <i data-lucide="search" class="search-icon-pos"></i>
+                    <input type="text" id="slotSearchInput" class="search-retro-input" placeholder="Search supplies (e.g. G-Tec, A4, Blue Book)..." oninput="handleSearch(this.value)">
+                </div>
+                <div class="inventory-machine-tag">
+                    <?= htmlspecialchars($machine_id) ?> • 4 TIERS
+                </div>
             </div>
         </div>
 
@@ -1695,15 +1909,56 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         </div>
     </div>
 
-    <!-- IR Sensor Telemetry Verification Overlay -->
+    <!-- IR Sensor Telemetry Verification Overlay with Animated Drop Chute & e-Receipt -->
     <div class="retro-drop-scrim" id="dispenseOverlay">
-        <div class="chute-icon-casing" id="dispenseIcon">
-            <i data-lucide="loader-2" style="width: 46px; height: 46px; animation: retroSpin 1.2s linear infinite;" id="spinnerIcon"></i>
+        <!-- Mechanical Chute Simulation Container -->
+        <div class="chute-physics-stage" id="chuteStage">
+            <span class="chute-ir-beam-label" id="beamStatusLabel">IR BEAM READY</span>
+            <div class="chute-ir-beam" id="chuteBeam"></div>
+            <img src="" id="chuteFallingImg" class="chute-item-payload" alt="Dropping Supply">
         </div>
+
         <h2 class="drop-en-title" id="dispenseTitle">Dispensing Supply...</h2>
         <div class="drop-log-box" id="dispenseMsg">
             Actuating motor on Slot #<span id="activeSlotNum">01</span>.<br>Awaiting optical IR break-beam sensor verification...
         </div>
+
+        <!-- Animated Paper e-Receipt Printout -->
+        <div class="retro-receipt-ticket" id="receiptPrintout" style="display: none;">
+            <div class="receipt-header-row">
+                <div class="receipt-title">★ PENPOINT e-RECEIPT ★</div>
+                <div style="font-size: 0.65rem; color: #636e72;">UNIVERSITY OF MAKATI • KIOSK #01</div>
+            </div>
+            <div class="receipt-line">
+                <span>DATE/TIME:</span>
+                <span id="receiptDateTime">2026-10-22 14:55</span>
+            </div>
+            <div class="receipt-line">
+                <span>REF NO:</span>
+                <span id="receiptRef">TXN-00000000</span>
+            </div>
+            <div class="receipt-line">
+                <span>ITEM:</span>
+                <span id="receiptItemName" style="font-weight: 700;">Pilot G-Tec C4</span>
+            </div>
+            <div class="receipt-line">
+                <span>QTY:</span>
+                <span id="receiptQty">1</span>
+            </div>
+            <div class="receipt-line">
+                <span>PAY METHOD:</span>
+                <span>QR Ph (PayMongo)</span>
+            </div>
+            <div class="receipt-line">
+                <span>IR STATUS:</span>
+                <span style="color: #27ae60; font-weight: 800;">VERIFIED (FALL DETECTED)</span>
+            </div>
+            <div class="receipt-total-line">
+                <span>TOTAL PAID:</span>
+                <span id="receiptTotalAmount">₱45.00</span>
+            </div>
+        </div>
+
         <div class="tray-takeout-panel" id="dispenseDoneAction">
             <button class="btn-claim-item" id="claimItemBtn" onclick="finishOrder()">
                 <i data-lucide="package-check" style="width: 18px; height: 18px;"></i>
@@ -1734,10 +1989,159 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         let currentProduct = null;
         let selectedPayMethod = 'QR_PH';
         let selectedQuantity = 1;
+        let soundEnabled = true;
+
+        // -------------------------------------------------------------
+        // Retro Web Audio API Synthesizer (Zero External Audio Files)
+        // Authentic Showa mechanical relay, click, rotary tick, and drop chimes
+        // -------------------------------------------------------------
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('audioToggleBtn');
+            const icon = document.getElementById('audioIcon');
+            const label = document.getElementById('audioLabel');
+
+            if (soundEnabled) {
+                btn.classList.remove('muted');
+                label.innerText = 'SFX ON';
+                icon.setAttribute('data-lucide', 'volume-2');
+                playRetroSound('click');
+            } else {
+                btn.classList.add('muted');
+                label.innerText = 'MUTED';
+                icon.setAttribute('data-lucide', 'volume-x');
+            }
+            lucide.createIcons();
+        }
+
+        function playRetroSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
+                if (type === 'click') {
+                    // Tactile mechanical switch click
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(140, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.04);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'step') {
+                    // Rotary tick for stepper
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.035);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.035);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.035);
+                } else if (type === 'drop') {
+                    // Metallic coin/supply landing clink & IR chime
+                    const osc1 = ctx.createOscillator();
+                    const osc2 = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(987.77, now); // B5
+                    osc1.frequency.setValueAtTime(1318.51, now + 0.09); // E6
+
+                    osc2.type = 'triangle';
+                    osc2.frequency.setValueAtTime(659.25, now);
+                    osc2.frequency.setValueAtTime(880.00, now + 0.09);
+
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc1.start(now);
+                    osc2.start(now);
+                    osc1.stop(now + 0.45);
+                    osc2.stop(now + 0.45);
+
+                    // Gentle haptic pulse on supported mobile devices
+                    if (navigator.vibrate) navigator.vibrate([40, 60, 80]);
+                } else if (type === 'fail') {
+                    // Error buzz
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.setValueAtTime(90, now + 0.12);
+                    gain.gain.setValueAtTime(0.35, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.28);
+                }
+            } catch(e) {}
+        }
+
+        // -------------------------------------------------------------
+        // Live Search Input Filtering
+        // -------------------------------------------------------------
+        function handleSearch(term) {
+            const query = (term || '').trim().toLowerCase();
+            const cards = document.querySelectorAll('.vending-slot-card');
+            let matchCount = 0;
+
+            cards.forEach(card => {
+                const name = (card.querySelector('.item-name-title')?.innerText || '').toLowerCase();
+                const desc = (card.querySelector('.item-eng-desc')?.innerText || '').toLowerCase();
+                const cat = (card.dataset.category || '').toLowerCase();
+                const slot = (card.dataset.slot || '').toLowerCase();
+
+                const isMatch = (!query) || 
+                                name.includes(query) || 
+                                desc.includes(query) || 
+                                cat.includes(query) || 
+                                slot === query ||
+                                `slot ${slot}`.includes(query);
+
+                if (isMatch) {
+                    card.style.display = 'flex';
+                    matchCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const countTag = document.getElementById('activeSlotsCountTag');
+            if (countTag) {
+                countTag.innerText = query ? `${matchCount} MATCH${matchCount === 1 ? '' : 'ES'}` : '6 SLOTS ACTIVE';
+            }
+        }
 
         // -------------------------------------------------------------
         // Category Slider: Smooth touch swipe & drag horizontal physics
-        // Zero vertical page jump
         // -------------------------------------------------------------
         const catSlider = document.getElementById('categorySlider');
         let isDown = false;
@@ -1746,6 +2150,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         let isDragging = false;
 
         function slideCategory(dir) {
+            playRetroSound('click');
             if (catSlider) {
                 catSlider.scrollBy({ left: dir * 140, behavior: 'smooth' });
             }
@@ -1780,9 +2185,14 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                 isDragging = false;
                 return;
             }
+            playRetroSound('click');
 
             document.querySelectorAll('.retro-chip').forEach(btn => btn.classList.remove('active'));
             el.classList.add('active');
+
+            // Reset search input
+            const searchInput = document.getElementById('slotSearchInput');
+            if (searchInput) searchInput.value = '';
 
             if (catSlider) {
                 const trackRect = catSlider.getBoundingClientRect();
@@ -1792,20 +2202,28 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             }
 
             const cards = document.querySelectorAll('.vending-slot-card');
+            let visibleCount = 0;
             cards.forEach(card => {
                 const itemCat = card.dataset.category || '';
                 if (cat === 'All' || itemCat.toLowerCase().includes(cat.toLowerCase())) {
                     card.style.display = 'flex';
+                    visibleCount++;
                 } else {
                     card.style.display = 'none';
                 }
             });
+
+            const countTag = document.getElementById('activeSlotsCountTag');
+            if (countTag) {
+                countTag.innerText = cat === 'All' ? '6 SLOTS ACTIVE' : `${visibleCount} IN ${cat.toUpperCase()}`;
+            }
         }
 
         // -------------------------------------------------------------
         // Checkout & Telemetry Handling
         // -------------------------------------------------------------
         function openCheckout(product) {
+            playRetroSound('click');
             currentProduct = product;
             selectedQuantity = 1;
             const slotStr = String(product.slot_number).padStart(2, '0');
@@ -1849,6 +2267,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             const maxAllowed = Math.min(10, currentProduct.stock);
             const newQty = selectedQuantity + delta;
             if (newQty >= 1 && newQty <= maxAllowed) {
+                playRetroSound('step');
                 selectedQuantity = newQty;
                 updatePriceAndQtyView();
             }
@@ -1873,6 +2292,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         }
 
         function closeCheckout() {
+            playRetroSound('click');
             document.getElementById('checkoutModal').classList.remove('open');
         }
 
@@ -1883,6 +2303,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
 
         async function executeDispense(simulateFail = false) {
             if (!currentProduct) return;
+            playRetroSound('click');
             closeCheckout();
 
             const overlay = document.getElementById('dispenseOverlay');
@@ -1890,14 +2311,25 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             const msg = document.getElementById('dispenseMsg');
             const actionBtn = document.getElementById('dispenseDoneAction');
             const claimBtn = document.getElementById('claimItemBtn');
-            const iconRing = document.getElementById('dispenseIcon');
             const activeSlotNum = document.getElementById('activeSlotNum');
+            const chuteBeam = document.getElementById('chuteBeam');
+            const beamLabel = document.getElementById('beamStatusLabel');
+            const fallingImg = document.getElementById('chuteFallingImg');
+            const receiptBox = document.getElementById('receiptPrintout');
 
             const slotNum = currentProduct.slot_number;
             const slotStr = String(slotNum).padStart(2, '0');
             const tierNum = currentProduct.tier_number || (slotNum <= 3 ? slotNum : 4);
             const isRoller = (currentProduct.mechanism_type === 'roller_feed' || slotNum <= 3);
             const qty = selectedQuantity;
+
+            // Reset chute animation state
+            fallingImg.src = currentProduct.image_url;
+            fallingImg.className = 'chute-item-payload';
+            chuteBeam.classList.remove('beam-tripped');
+            beamLabel.classList.remove('beam-tripped');
+            beamLabel.innerText = 'IR BEAM ARMED';
+            receiptBox.style.display = 'none';
 
             activeSlotNum.innerText = slotStr;
             title.innerText = isRoller ? `Feeding ${qty} Paper Sheet(s)...` : `Actuating Servo Paddle (${qty}x)...`;
@@ -1908,9 +2340,6 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
 
             msg.innerHTML = `${motorActionText}<br><span style="color: #f39c12;">Awaiting Tier ${tierNum} optical break-beam IR drop detection...</span>`;
             actionBtn.style.display = "none";
-            iconRing.style.borderColor = "#f39c12";
-            iconRing.style.color = "#f39c12";
-            iconRing.innerHTML = `<i data-lucide="loader-2" style="width: 46px; height: 46px; animation: retroSpin 1.2s linear infinite;"></i>`;
             overlay.classList.add('active');
             lucide.createIcons();
 
@@ -1920,44 +2349,62 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                 const data = await resp.json();
 
                 if (data.success) {
+                    // Trigger physical chute falling animation
                     setTimeout(() => {
-                        title.innerText = "Dispense Verified!";
-                        msg.innerHTML = `<strong>Break-Beam IR Sensor Triggered!</strong><br>${qty}x ${currentProduct.name} fell from Tier ${tierNum} into the collection tray.<br><span style="color: #95a5a6; font-size: 0.76rem;">PayMongo Ref: ${data.reference_no} • Total: <?= CURRENCY_SYMBOL ?>${Number(data.total_amount).toFixed(2)}</span>`;
-                        iconRing.style.borderColor = "#2ecc71";
-                        iconRing.style.color = "#2ecc71";
-                        iconRing.innerHTML = `<i data-lucide="check" style="width: 48px; height: 48px;"></i>`;
-                        claimBtn.innerHTML = `<i data-lucide="package-check" style="width: 18px; height: 18px;"></i> ${qty} Item(s) Confirmed! Claim from Tray`;
-                        claimBtn.style.background = "var(--retro-red)";
-                        actionBtn.style.display = "block";
-                        lucide.createIcons();
-                    }, 1700);
+                        fallingImg.classList.add('falling');
+
+                        // Beam break moment (at 0.85s when product hits bottom chute)
+                        setTimeout(() => {
+                            chuteBeam.classList.add('beam-tripped');
+                            beamLabel.classList.add('beam-tripped');
+                            beamLabel.innerText = 'IR BEAM TRIPPED 🟢';
+                            playRetroSound('drop');
+
+                            title.innerText = "Dispense Verified!";
+                            msg.innerHTML = `<strong>Break-Beam IR Sensor Triggered!</strong><br>${qty}x ${currentProduct.name} fell from Tier ${tierNum} into collection tray.`;
+
+                            // Populate and print e-receipt
+                            const now = new Date();
+                            const dtString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            document.getElementById('receiptDateTime').innerText = dtString;
+                            document.getElementById('receiptRef').innerText = data.reference_no || ('TXN-' + Math.floor(10000000 + Math.random() * 90000000));
+                            document.getElementById('receiptItemName').innerText = currentProduct.name;
+                            document.getElementById('receiptQty').innerText = qty;
+                            document.getElementById('receiptTotalAmount').innerText = `<?= CURRENCY_SYMBOL ?>` + Number(data.total_amount).toFixed(2);
+                            receiptBox.style.display = 'block';
+
+                            claimBtn.innerHTML = `<i data-lucide="package-check" style="width: 18px; height: 18px;"></i> ${qty} Item(s) Confirmed! Claim from Tray`;
+                            claimBtn.style.background = "var(--retro-red)";
+                            actionBtn.style.display = "block";
+                            lucide.createIcons();
+                        }, 850);
+                    }, 600);
                 } else if (data.status === 'REFUND_PENDING') {
-                    // Simulated or genuine failure: reverse retry executed, break-beam IR timed out
+                    // Sensor timeout / Jam
                     setTimeout(() => {
+                        playRetroSound('fail');
                         msg.innerHTML = `<span style="color: #e67e22;">Sensor timeout on Tier ${tierNum}! Attempting 1x reverse & retry cycle...</span>`;
                         setTimeout(() => {
+                            playRetroSound('fail');
                             title.innerText = "Dispense Failed — Refund Queued";
                             msg.innerHTML = `<strong>Break-Beam IR Drop Timeout</strong><br>Drop not confirmed after reverse/retry.<br><span style="color: #ff7675; font-size: 0.8rem;">Status: REFUND_PENDING (<?= CURRENCY_SYMBOL ?>${Number(data.total_amount).toFixed(2)})</span><br><span style="color: #95a5a6; font-size: 0.74rem;">PayMongo Ref: ${data.reference_no} • Notified Admin Dashboard</span>`;
-                            iconRing.style.borderColor = "#e74c3c";
-                            iconRing.style.color = "#e74c3c";
-                            iconRing.innerHTML = `<i data-lucide="alert-triangle" style="width: 46px; height: 46px;"></i>`;
+                            beamLabel.innerText = 'IR BEAM TIMEOUT ⚠️';
                             claimBtn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 18px; height: 18px;"></i> Acknowledge & Return`;
                             claimBtn.style.background = "#e74c3c";
                             actionBtn.style.display = "block";
                             lucide.createIcons();
                         }, 1400);
-                    }, 1200);
+                    }, 1000);
                 } else {
+                    playRetroSound('fail');
                     title.innerText = "Dispense Error";
                     msg.innerText = data.error || "Unable to complete dispense cycle.";
-                    iconRing.style.borderColor = "#e74c3c";
-                    iconRing.style.color = "#e74c3c";
-                    iconRing.innerHTML = `<i data-lucide="alert-triangle" style="width: 46px; height: 46px;"></i>`;
                     claimBtn.innerHTML = `Close`;
                     actionBtn.style.display = "block";
                     lucide.createIcons();
                 }
             } catch (err) {
+                playRetroSound('fail');
                 title.innerText = "Connection Timeout";
                 msg.innerText = "Could not communicate with the vending machine microcontroller.";
                 actionBtn.style.display = "block";
@@ -1965,6 +2412,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         }
 
         function finishOrder() {
+            playRetroSound('click');
             document.getElementById('dispenseOverlay').classList.remove('active');
             window.location.reload();
         }
