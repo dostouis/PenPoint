@@ -76,7 +76,7 @@ $groupServices.Controls.Add($lblCloudflare)
 
 # Public URL Box Group
 $groupPublic = New-Object System.Windows.Forms.GroupBox
-$groupPublic.Text = " Public Cloudflare URL (For Phone and ESP32) "
+$groupPublic.Text = " Public Mobile & Remote Web Link (Cloudflare) "
 $groupPublic.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $groupPublic.ForeColor = [System.Drawing.Color]::FromArgb(116, 185, 255)
 $groupPublic.Location = New-Object System.Drawing.Point(20, 230)
@@ -94,7 +94,7 @@ $txtUrl.ReadOnly = $true
 $groupPublic.Controls.Add($txtUrl)
 
 $btnCopyUrl = New-Object System.Windows.Forms.Button
-$btnCopyUrl.Text = "Copy Public Phone URL"
+$btnCopyUrl.Text = "Copy Phone Web Link"
 $btnCopyUrl.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $btnCopyUrl.BackColor = [System.Drawing.Color]::FromArgb(46, 125, 50)
 $btnCopyUrl.ForeColor = [System.Drawing.Color]::White
@@ -104,7 +104,7 @@ $btnCopyUrl.Size = New-Object System.Drawing.Size(230, 32)
 $groupPublic.Controls.Add($btnCopyUrl)
 
 $btnOpenPhoneUrl = New-Object System.Windows.Forms.Button
-$btnOpenPhoneUrl.Text = "Open Phone Link in Browser"
+$btnOpenPhoneUrl.Text = "Open Mobile Link in Browser"
 $btnOpenPhoneUrl.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $btnOpenPhoneUrl.BackColor = [System.Drawing.Color]::FromArgb(33, 40, 56)
 $btnOpenPhoneUrl.ForeColor = [System.Drawing.Color]::FromArgb(116, 185, 255)
