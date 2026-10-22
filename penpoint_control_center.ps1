@@ -1,5 +1,5 @@
 # PenPoint Vending Machine - System Control Center GUI
-# Showa Retro Hardware Console Theme for Windows Forms
+# Concept: Japanese Retro Stationery Jidouhanbaiki (Show / Early Heisei Enamel Chassis)
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -8,153 +8,206 @@ Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "PenPoint Control Center - UMak SkiDB"
-$form.Size = New-Object System.Drawing.Size(600, 680)
+$form.Size = New-Object System.Drawing.Size(620, 720)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
-$form.BackColor = [System.Drawing.Color]::FromArgb(21, 24, 33)
+$form.BackColor = [System.Drawing.Color]::FromArgb(21, 24, 33) # --retro-bg #151821
 $form.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
 
-# Title Header Banner (Retro Vending Chassis Plate)
+# -------------------------------------------------------------
+# 1. Showa Stationery Signboard Crown Header
+# -------------------------------------------------------------
 $headerPanel = New-Object System.Windows.Forms.Panel
 $headerPanel.Location = New-Object System.Drawing.Point(0, 0)
-$headerPanel.Size = New-Object System.Drawing.Size(600, 80)
-$headerPanel.BackColor = [System.Drawing.Color]::FromArgb(33, 38, 52)
+$headerPanel.Size = New-Object System.Drawing.Size(620, 88)
+$headerPanel.BackColor = [System.Drawing.Color]::FromArgb(33, 38, 52) # --retro-chassis #212634
 $form.Controls.Add($headerPanel)
 
-$titleBadge = New-Object System.Windows.Forms.Label
-$titleBadge.Text = "PENPOINT"
-$titleBadge.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-$titleBadge.ForeColor = [System.Drawing.Color]::FromArgb(255, 234, 167)
-$titleBadge.Location = New-Object System.Drawing.Point(24, 15)
-$titleBadge.AutoSize = $true
-$headerPanel.Controls.Add($titleBadge)
+# Hanko / Sign Stamp Icon Box
+$stampBox = New-Object System.Windows.Forms.Panel
+$stampBox.Location = New-Object System.Drawing.Point(22, 14)
+$stampBox.Size = New-Object System.Drawing.Size(56, 56)
+$stampBox.BackColor = [System.Drawing.Color]::FromArgb(214, 48, 49) # --retro-red
+$headerPanel.Controls.Add($stampBox)
 
-$titleTag = New-Object System.Windows.Forms.Label
-$titleTag.Text = "CONTROL CENTER"
-$titleTag.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-$titleTag.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
-$titleTag.Location = New-Object System.Drawing.Point(165, 15)
-$titleTag.AutoSize = $true
-$headerPanel.Controls.Add($titleTag)
+$lblKanjiStamp = New-Object System.Windows.Forms.Label
+$lblKanjiStamp.Text = "文具"
+$lblKanjiStamp.Font = New-Object System.Drawing.Font("MS Gothic", 16, [System.Drawing.FontStyle]::Bold)
+$lblKanjiStamp.ForeColor = [System.Drawing.Color]::White
+$lblKanjiStamp.Location = New-Object System.Drawing.Point(0, 8)
+$lblKanjiStamp.Size = New-Object System.Drawing.Size(56, 24)
+$lblKanjiStamp.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$stampBox.Controls.Add($lblKanjiStamp)
 
-$subtitleLabel = New-Object System.Windows.Forms.Label
-$subtitleLabel.Text = "4-Tier Smart Stationery Vending Machine | Group SkiDB (IV-CINS)"
-$subtitleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
-$subtitleLabel.ForeColor = [System.Drawing.Color]::FromArgb(155, 166, 190)
-$subtitleLabel.Location = New-Object System.Drawing.Point(25, 48)
-$subtitleLabel.AutoSize = $true
-$headerPanel.Controls.Add($subtitleLabel)
+$lblSubStamp = New-Object System.Windows.Forms.Label
+$lblSubStamp.Text = "PEN"
+$lblSubStamp.Font = New-Object System.Drawing.Font("Segoe UI", 7, [System.Drawing.FontStyle]::Bold)
+$lblSubStamp.ForeColor = [System.Drawing.Color]::FromArgb(255, 200, 200)
+$lblSubStamp.Location = New-Object System.Drawing.Point(0, 34)
+$lblSubStamp.Size = New-Object System.Drawing.Size(56, 16)
+$lblSubStamp.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$stampBox.Controls.Add($lblSubStamp)
 
-# 1. System Services Group Box
+# Header Title Cluster
+$titleMain = New-Object System.Windows.Forms.Label
+$titleMain.Text = "PENPOINT"
+$titleMain.Font = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
+$titleMain.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
+$titleMain.Location = New-Object System.Drawing.Point(88, 14)
+$titleMain.AutoSize = $true
+$headerPanel.Controls.Add($titleMain)
+
+$badgeJp = New-Object System.Windows.Forms.Label
+$badgeJp.Text = "自販機"
+$badgeJp.Font = New-Object System.Drawing.Font("MS Gothic", 9.5, [System.Drawing.FontStyle]::Bold)
+$badgeJp.BackColor = [System.Drawing.Color]::FromArgb(243, 156, 18) # --retro-mustard
+$badgeJp.ForeColor = [System.Drawing.Color]::FromArgb(18, 21, 27)
+$badgeJp.Location = New-Object System.Drawing.Point(232, 21)
+$badgeJp.Size = New-Object System.Drawing.Size(52, 20)
+$badgeJp.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$headerPanel.Controls.Add($badgeJp)
+
+$titleSub = New-Object System.Windows.Forms.Label
+$titleSub.Text = "SMART STATIONERY KIOSK CONTROL CONSOLE | GROUP SkiDB"
+$titleSub.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$titleSub.ForeColor = [System.Drawing.Color]::FromArgb(155, 166, 190)
+$titleSub.Location = New-Object System.Drawing.Point(90, 48)
+$titleSub.AutoSize = $true
+$headerPanel.Controls.Add($titleSub)
+
+# -------------------------------------------------------------
+# 2. Hardware Services Telemetry Plate
+# -------------------------------------------------------------
 $groupServices = New-Object System.Windows.Forms.GroupBox
-$groupServices.Text = "  SYSTEM SERVICES STATUS  "
+$groupServices.Text = " HARDWARE SERVICES & TELEMETRY "
 $groupServices.Font = New-Object System.Drawing.Font("Segoe UI", 8.5, [System.Drawing.FontStyle]::Bold)
 $groupServices.ForeColor = [System.Drawing.Color]::FromArgb(243, 156, 18)
-$groupServices.Location = New-Object System.Drawing.Point(24, 95)
-$groupServices.Size = New-Object System.Drawing.Size(536, 115)
+$groupServices.Location = New-Object System.Drawing.Point(22, 100)
+$groupServices.Size = New-Object System.Drawing.Size(560, 108)
 $form.Controls.Add($groupServices)
 
-# Service Indicators
 $lblMysql = New-Object System.Windows.Forms.Label
 $lblMysql.Text = "[*] MySQL Database: Checking..."
-$lblMysql.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
+$lblMysql.Font = New-Object System.Drawing.Font("Consolas", 9)
 $lblMysql.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
 $lblMysql.Location = New-Object System.Drawing.Point(18, 24)
-$lblMysql.Size = New-Object System.Drawing.Size(500, 22)
+$lblMysql.Size = New-Object System.Drawing.Size(520, 20)
 $groupServices.Controls.Add($lblMysql)
 
 $lblPhp = New-Object System.Windows.Forms.Label
-$lblPhp.Text = "[*] Local Web Server (Port 8000): Checking..."
-$lblPhp.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
+$lblPhp.Text = "[*] Local Kiosk Web Server: Checking (Port 8000)..."
+$lblPhp.Font = New-Object System.Drawing.Font("Consolas", 9)
 $lblPhp.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
-$lblPhp.Location = New-Object System.Drawing.Point(18, 52)
-$lblPhp.Size = New-Object System.Drawing.Size(500, 22)
+$lblPhp.Location = New-Object System.Drawing.Point(18, 48)
+$lblPhp.Size = New-Object System.Drawing.Size(520, 20)
 $groupServices.Controls.Add($lblPhp)
 
 $lblCloudflare = New-Object System.Windows.Forms.Label
-$lblCloudflare.Text = "[*] Cloudflare Public Tunnel: Connecting to Edge..."
-$lblCloudflare.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
+$lblCloudflare.Text = "[*] Cloudflare Edge Tunnel: Establishing secure route..."
+$lblCloudflare.Font = New-Object System.Drawing.Font("Consolas", 9)
 $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(243, 156, 18)
-$lblCloudflare.Location = New-Object System.Drawing.Point(18, 80)
-$lblCloudflare.Size = New-Object System.Drawing.Size(500, 22)
+$lblCloudflare.Location = New-Object System.Drawing.Point(18, 72)
+$lblCloudflare.Size = New-Object System.Drawing.Size(520, 20)
 $groupServices.Controls.Add($lblCloudflare)
 
-# 2. Remote Access Group (Cloudflare Edge)
+# -------------------------------------------------------------
+# 3. Public Remote Access Box (Live Cloudflare Tunnel)
+# -------------------------------------------------------------
 $groupPublic = New-Object System.Windows.Forms.GroupBox
-$groupPublic.Text = "  PUBLIC MOBILE & REMOTE ACCESS (CLOUDFLARE)  "
+$groupPublic.Text = " PUBLIC CLOUDFLARE REMOTE ACCESS "
 $groupPublic.Font = New-Object System.Drawing.Font("Segoe UI", 8.5, [System.Drawing.FontStyle]::Bold)
 $groupPublic.ForeColor = [System.Drawing.Color]::FromArgb(116, 185, 255)
-$groupPublic.Location = New-Object System.Drawing.Point(24, 222)
-$groupPublic.Size = New-Object System.Drawing.Size(536, 120)
+$groupPublic.Location = New-Object System.Drawing.Point(22, 218)
+$groupPublic.Size = New-Object System.Drawing.Size(560, 118)
 $form.Controls.Add($groupPublic)
 
 $txtUrl = New-Object System.Windows.Forms.TextBox
-$txtUrl.Text = "Generating secure Cloudflare URL..."
+$txtUrl.Text = "Negotiating Cloudflare edge endpoint..."
 $txtUrl.Font = New-Object System.Drawing.Font("Consolas", 9.5, [System.Drawing.FontStyle]::Bold)
-$txtUrl.BackColor = [System.Drawing.Color]::FromArgb(14, 17, 23)
+$txtUrl.BackColor = [System.Drawing.Color]::FromArgb(17, 20, 28)
 $txtUrl.ForeColor = [System.Drawing.Color]::FromArgb(255, 234, 167)
-$txtUrl.Location = New-Object System.Drawing.Point(18, 28)
-$txtUrl.Size = New-Object System.Drawing.Size(500, 26)
+$txtUrl.Location = New-Object System.Drawing.Point(18, 25)
+$txtUrl.Size = New-Object System.Drawing.Size(524, 26)
 $txtUrl.ReadOnly = $true
 $groupPublic.Controls.Add($txtUrl)
 
+# Button 1: Copy Public Link
 $btnCopyUrl = New-Object System.Windows.Forms.Button
 $btnCopyUrl.Text = "Copy Public Kiosk URL"
 $btnCopyUrl.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-$btnCopyUrl.BackColor = [System.Drawing.Color]::FromArgb(46, 125, 50)
+$btnCopyUrl.BackColor = [System.Drawing.Color]::FromArgb(46, 125, 50) # --retro-matcha
 $btnCopyUrl.ForeColor = [System.Drawing.Color]::White
 $btnCopyUrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCopyUrl.FlatAppearance.BorderSize = 0
-$btnCopyUrl.Location = New-Object System.Drawing.Point(18, 66)
-$btnCopyUrl.Size = New-Object System.Drawing.Size(240, 36)
+$btnCopyUrl.Location = New-Object System.Drawing.Point(18, 62)
+$btnCopyUrl.Size = New-Object System.Drawing.Size(166, 38)
 $btnCopyUrl.Cursor = [System.Windows.Forms.Cursors]::Hand
 $groupPublic.Controls.Add($btnCopyUrl)
 
-# Replaced with Public Admin Portal Button
+# Button 2: Open Public Student Kiosk
+$btnOpenPublicKiosk = New-Object System.Windows.Forms.Button
+$btnOpenPublicKiosk.Text = "Open Public Kiosk"
+$btnOpenPublicKiosk.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnOpenPublicKiosk.BackColor = [System.Drawing.Color]::FromArgb(214, 48, 49) # --retro-red
+$btnOpenPublicKiosk.ForeColor = [System.Drawing.Color]::White
+$btnOpenPublicKiosk.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnOpenPublicKiosk.FlatAppearance.BorderSize = 0
+$btnOpenPublicKiosk.Location = New-Object System.Drawing.Point(197, 62)
+$btnOpenPublicKiosk.Size = New-Object System.Drawing.Size(166, 38)
+$btnOpenPublicKiosk.Cursor = [System.Windows.Forms.Cursors]::Hand
+$groupPublic.Controls.Add($btnOpenPublicKiosk)
+
+# Button 3: Open Public Admin Portal
 $btnOpenPublicAdmin = New-Object System.Windows.Forms.Button
-$btnOpenPublicAdmin.Text = "Open Public Admin Portal"
+$btnOpenPublicAdmin.Text = "Open Public Admin"
 $btnOpenPublicAdmin.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-$btnOpenPublicAdmin.BackColor = [System.Drawing.Color]::FromArgb(33, 40, 56)
+$btnOpenPublicAdmin.BackColor = [System.Drawing.Color]::FromArgb(35, 42, 58)
 $btnOpenPublicAdmin.ForeColor = [System.Drawing.Color]::FromArgb(116, 185, 255)
 $btnOpenPublicAdmin.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$btnOpenPublicAdmin.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(60, 75, 105)
-$btnOpenPublicAdmin.Location = New-Object System.Drawing.Point(278, 66)
-$btnOpenPublicAdmin.Size = New-Object System.Drawing.Size(240, 36)
+$btnOpenPublicAdmin.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(65, 80, 110)
+$btnOpenPublicAdmin.Location = New-Object System.Drawing.Point(376, 62)
+$btnOpenPublicAdmin.Size = New-Object System.Drawing.Size(166, 38)
 $btnOpenPublicAdmin.Cursor = [System.Windows.Forms.Cursors]::Hand
 $groupPublic.Controls.Add($btnOpenPublicAdmin)
 
-# 3. Local Machine Launch Buttons
+# -------------------------------------------------------------
+# 4. Local Kiosk & Admin Controls
+# -------------------------------------------------------------
+# Button 4: Local Student Kiosk
 $btnOpenKiosk = New-Object System.Windows.Forms.Button
-$btnOpenKiosk.Text = "Open Local Student Kiosk"
-$btnOpenKiosk.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$btnOpenKiosk.BackColor = [System.Drawing.Color]::FromArgb(214, 48, 49)
-$btnOpenKiosk.ForeColor = [System.Drawing.Color]::White
+$btnOpenKiosk.Text = "Local Student Kiosk (127.0.0.1:8000)"
+$btnOpenKiosk.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
+$btnOpenKiosk.BackColor = [System.Drawing.Color]::FromArgb(33, 38, 52)
+$btnOpenKiosk.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
 $btnOpenKiosk.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$btnOpenKiosk.FlatAppearance.BorderSize = 0
-$btnOpenKiosk.Location = New-Object System.Drawing.Point(24, 354)
-$btnOpenKiosk.Size = New-Object System.Drawing.Size(260, 44)
+$btnOpenKiosk.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(65, 75, 100)
+$btnOpenKiosk.Location = New-Object System.Drawing.Point(22, 348)
+$btnOpenKiosk.Size = New-Object System.Drawing.Size(272, 42)
 $btnOpenKiosk.Cursor = [System.Windows.Forms.Cursors]::Hand
 $form.Controls.Add($btnOpenKiosk)
 
+# Button 5: Local Admin Dashboard
 $btnOpenAdmin = New-Object System.Windows.Forms.Button
-$btnOpenAdmin.Text = "Open Local Admin Dashboard"
-$btnOpenAdmin.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$btnOpenAdmin.BackColor = [System.Drawing.Color]::FromArgb(35, 41, 56)
+$btnOpenAdmin.Text = "Local Admin Dashboard (Port 8000)"
+$btnOpenAdmin.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
+$btnOpenAdmin.BackColor = [System.Drawing.Color]::FromArgb(33, 38, 52)
 $btnOpenAdmin.ForeColor = [System.Drawing.Color]::FromArgb(255, 234, 167)
 $btnOpenAdmin.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$btnOpenAdmin.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(60, 70, 95)
-$btnOpenAdmin.Location = New-Object System.Drawing.Point(300, 354)
-$btnOpenAdmin.Size = New-Object System.Drawing.Size(260, 44)
+$btnOpenAdmin.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(65, 75, 100)
+$btnOpenAdmin.Location = New-Object System.Drawing.Point(310, 348)
+$btnOpenAdmin.Size = New-Object System.Drawing.Size(272, 42)
 $btnOpenAdmin.Cursor = [System.Windows.Forms.Cursors]::Hand
 $form.Controls.Add($btnOpenAdmin)
 
-# 4. Live Activity Log Section
+# -------------------------------------------------------------
+# 5. Live Activity Telemetry Terminal
+# -------------------------------------------------------------
 $lblLog = New-Object System.Windows.Forms.Label
-$lblLog.Text = "Live System Telemetry & Logs:"
-$lblLog.Font = New-Object System.Drawing.Font("Segoe UI", 8.5, [System.Drawing.FontStyle]::Bold)
+$lblLog.Text = "SYSTEM ACTIVITY TELEMETRY:"
+$lblLog.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
 $lblLog.ForeColor = [System.Drawing.Color]::FromArgb(155, 166, 190)
-$lblLog.Location = New-Object System.Drawing.Point(24, 412)
+$lblLog.Location = New-Object System.Drawing.Point(22, 404)
 $lblLog.AutoSize = $true
 $form.Controls.Add($lblLog)
 
@@ -164,8 +217,8 @@ $txtLog.ScrollBars = "Vertical"
 $txtLog.Font = New-Object System.Drawing.Font("Consolas", 8.5)
 $txtLog.BackColor = [System.Drawing.Color]::FromArgb(14, 17, 23)
 $txtLog.ForeColor = [System.Drawing.Color]::FromArgb(178, 190, 195)
-$txtLog.Location = New-Object System.Drawing.Point(24, 432)
-$txtLog.Size = New-Object System.Drawing.Size(536, 125)
+$txtLog.Location = New-Object System.Drawing.Point(22, 424)
+$txtLog.Size = New-Object System.Drawing.Size(560, 160)
 $txtLog.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
 $txtLog.ReadOnly = $true
 $form.Controls.Add($txtLog)
@@ -174,12 +227,12 @@ $form.Controls.Add($txtLog)
 $btnStopExit = New-Object System.Windows.Forms.Button
 $btnStopExit.Text = "Stop All Services and Exit"
 $btnStopExit.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
-$btnStopExit.BackColor = [System.Drawing.Color]::FromArgb(37, 43, 56)
+$btnStopExit.BackColor = [System.Drawing.Color]::FromArgb(35, 30, 35)
 $btnStopExit.ForeColor = [System.Drawing.Color]::FromArgb(255, 118, 117)
 $btnStopExit.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$btnStopExit.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(100, 45, 45)
-$btnStopExit.Location = New-Object System.Drawing.Point(24, 572)
-$btnStopExit.Size = New-Object System.Drawing.Size(536, 38)
+$btnStopExit.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(90, 45, 45)
+$btnStopExit.Location = New-Object System.Drawing.Point(22, 600)
+$btnStopExit.Size = New-Object System.Drawing.Size(560, 40)
 $btnStopExit.Cursor = [System.Windows.Forms.Cursors]::Hand
 $form.Controls.Add($btnStopExit)
 
@@ -200,7 +253,7 @@ Add-Log "Checking MySQL Database..."
 if (Get-Process "mysqld" -ErrorAction SilentlyContinue) {
     $lblMysql.Text = "[OK] MySQL Database: Running (Port 3306)"
     $lblMysql.ForeColor = [System.Drawing.Color]::FromArgb(46, 204, 113)
-    Add-Log "MySQL service is running."
+    Add-Log "MySQL service active on port 3306."
 } else {
     if (Test-Path "C:\xampp\mysql_start.bat") {
         Start-Process -FilePath "C:\xampp\mysql_start.bat" -WindowStyle Hidden
@@ -220,9 +273,9 @@ $phpPsi.CreateNoWindow = $true
 $phpPsi.UseShellExecute = $false
 try {
     $phpProcess = [System.Diagnostics.Process]::Start($phpPsi)
-    $lblPhp.Text = "[OK] Local Web Server: Running on http://127.0.0.1:8000"
+    $lblPhp.Text = "[OK] Local Kiosk Web Server: Running (http://127.0.0.1:8000)"
     $lblPhp.ForeColor = [System.Drawing.Color]::FromArgb(46, 204, 113)
-    Add-Log "PHP Web Server active on port 8000."
+    Add-Log "PHP Web Server initialized on port 8000."
 } catch {
     $lblPhp.Text = "[ERR] Local Web Server: Error starting PHP"
     $lblPhp.ForeColor = [System.Drawing.Color]::FromArgb(231, 76, 60)
@@ -239,7 +292,7 @@ $cfPsi.CreateNoWindow = $true
 $cfPsi.UseShellExecute = $false
 try {
     $cfProcess = [System.Diagnostics.Process]::Start($cfPsi)
-    Add-Log "Cloudflare process started. Negotiating domain..."
+    Add-Log "Cloudflare tunnel process started. Negotiating domain..."
 } catch {
     $lblCloudflare.Text = "[ERR] Cloudflare: Error starting executable"
     $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(231, 76, 60)
@@ -258,28 +311,36 @@ $timer.Add_Tick({
         if ($match) {
             $script:rawBaseUrl = $match.Matches.Value
             $txtUrl.Text = "$script:rawBaseUrl/public/index.php"
-            $lblCloudflare.Text = "[OK] Cloudflare Public Tunnel: Active and Connected"
+            $lblCloudflare.Text = "[OK] Cloudflare Public Tunnel: Connected & Active"
             $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(46, 204, 113)
-            Add-Log "Public Domain: $script:rawBaseUrl"
+            Add-Log "Assigned Cloudflare Domain: $script:rawBaseUrl"
             [System.Windows.Forms.Clipboard]::SetText("$script:rawBaseUrl/public/index.php")
-            Add-Log "Kiosk link copied to clipboard automatically!"
+            Add-Log "Public Kiosk URL copied to clipboard automatically!"
             $timer.Stop()
         }
     }
     if ($script:pollCount -ge 20) {
         $timer.Stop()
-        if ($txtUrl.Text -eq "Generating secure Cloudflare URL...") {
+        if ($txtUrl.Text -eq "Negotiating Cloudflare edge endpoint...") {
             $txtUrl.Text = "Connection taking longer than usual. Retrying..."
         }
     }
 })
 $timer.Start()
 
-# Button Actions
+# Button Actions (5 Buttons Total)
 $btnCopyUrl.Add_Click({
     if ($txtUrl.Text.StartsWith("https")) {
         [System.Windows.Forms.Clipboard]::SetText($txtUrl.Text)
         $btnCopyUrl.Text = "Copied to Clipboard!"
+    }
+})
+
+$btnOpenPublicKiosk.Add_Click({
+    if ($script:rawBaseUrl.StartsWith("https")) {
+        [System.Diagnostics.Process]::Start("$script:rawBaseUrl/public/index.php")
+    } elseif ($txtUrl.Text.StartsWith("https")) {
+        [System.Diagnostics.Process]::Start($txtUrl.Text)
     }
 })
 
@@ -305,7 +366,7 @@ $btnStopExit.Add_Click({
 })
 
 $form.Add_FormClosing({
-    Add-Log "Shutting down processes..."
+    Add-Log "Shutting down background services..."
     if ($phpProcess -and !$phpProcess.HasExited) { $phpProcess.Kill() }
     if ($cfProcess -and !$cfProcess.HasExited) { $cfProcess.Kill() }
     Stop-Process -Name "cloudflared" -Force -ErrorAction SilentlyContinue
