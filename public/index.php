@@ -1374,43 +1374,6 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             justify-content: space-between;
         }
 
-        /* Search input bar */
-        .search-strip-box {
-            position: relative;
-            max-width: 280px;
-            width: 100%;
-        }
-
-        .search-retro-input {
-            width: 100%;
-            background: #171c26;
-            border: 1.5px solid #333d52;
-            color: var(--retro-cream);
-            padding: 6px 12px 6px 30px;
-            border-radius: var(--radius-pill);
-            font-family: var(--font-mono);
-            font-size: 0.74rem;
-            outline: none;
-            transition: all 0.15s;
-        }
-
-        .search-retro-input:focus {
-            border-color: #ffeaa7;
-            background: #1c2230;
-            box-shadow: 0 0 10px rgba(255, 234, 167, 0.2);
-        }
-
-        .search-icon-pos {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--retro-text-muted);
-            pointer-events: none;
-            width: 13px;
-            height: 13px;
-        }
-
         .drop-en-title {
             font-family: var(--font-display);
             font-size: 1.55rem;
@@ -1757,14 +1720,8 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                     <span class="inventory-count-tag" id="activeSlotsCountTag">6 SLOTS ACTIVE</span>
                 </h3>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <div class="search-strip-box">
-                    <i data-lucide="search" class="search-icon-pos"></i>
-                    <input type="text" id="slotSearchInput" class="search-retro-input" placeholder="Search supplies (e.g. G-Tec, A4, Blue Book)..." oninput="handleSearch(this.value)">
-                </div>
-                <div class="inventory-machine-tag">
-                    <?= htmlspecialchars($machine_id) ?> • 4 TIERS
-                </div>
+            <div class="inventory-machine-tag">
+                <?= htmlspecialchars($machine_id) ?> • 4 TIERS
             </div>
         </div>
 
@@ -2106,41 +2063,6 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         }
 
         // -------------------------------------------------------------
-        // Live Search Input Filtering
-        // -------------------------------------------------------------
-        function handleSearch(term) {
-            const query = (term || '').trim().toLowerCase();
-            const cards = document.querySelectorAll('.vending-slot-card');
-            let matchCount = 0;
-
-            cards.forEach(card => {
-                const name = (card.querySelector('.item-name-title')?.innerText || '').toLowerCase();
-                const desc = (card.querySelector('.item-eng-desc')?.innerText || '').toLowerCase();
-                const cat = (card.dataset.category || '').toLowerCase();
-                const slot = (card.dataset.slot || '').toLowerCase();
-
-                const isMatch = (!query) || 
-                                name.includes(query) || 
-                                desc.includes(query) || 
-                                cat.includes(query) || 
-                                slot === query ||
-                                `slot ${slot}`.includes(query);
-
-                if (isMatch) {
-                    card.style.display = 'flex';
-                    matchCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            const countTag = document.getElementById('activeSlotsCountTag');
-            if (countTag) {
-                countTag.innerText = query ? `${matchCount} MATCH${matchCount === 1 ? '' : 'ES'}` : '6 SLOTS ACTIVE';
-            }
-        }
-
-        // -------------------------------------------------------------
         // Category Slider: Smooth touch swipe & drag horizontal physics
         // -------------------------------------------------------------
         const catSlider = document.getElementById('categorySlider');
@@ -2189,10 +2111,6 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
 
             document.querySelectorAll('.retro-chip').forEach(btn => btn.classList.remove('active'));
             el.classList.add('active');
-
-            // Reset search input
-            const searchInput = document.getElementById('slotSearchInput');
-            if (searchInput) searchInput.value = '';
 
             if (catSlider) {
                 const trackRect = catSlider.getBoundingClientRect();
