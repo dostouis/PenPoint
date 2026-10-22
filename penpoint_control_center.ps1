@@ -32,19 +32,19 @@ $stampBox.BackColor = [System.Drawing.Color]::FromArgb(214, 48, 49) # --retro-re
 $headerPanel.Controls.Add($stampBox)
 
 $lblKanjiStamp = New-Object System.Windows.Forms.Label
-$lblKanjiStamp.Text = "文具"
-$lblKanjiStamp.Font = New-Object System.Drawing.Font("MS Gothic", 16, [System.Drawing.FontStyle]::Bold)
+$lblKanjiStamp.Text = "STN"
+$lblKanjiStamp.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
 $lblKanjiStamp.ForeColor = [System.Drawing.Color]::White
-$lblKanjiStamp.Location = New-Object System.Drawing.Point(0, 8)
-$lblKanjiStamp.Size = New-Object System.Drawing.Size(56, 24)
+$lblKanjiStamp.Location = New-Object System.Drawing.Point(0, 10)
+$lblKanjiStamp.Size = New-Object System.Drawing.Size(56, 20)
 $lblKanjiStamp.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $stampBox.Controls.Add($lblKanjiStamp)
 
 $lblSubStamp = New-Object System.Windows.Forms.Label
-$lblSubStamp.Text = "PEN"
-$lblSubStamp.Font = New-Object System.Drawing.Font("Segoe UI", 7, [System.Drawing.FontStyle]::Bold)
+$lblSubStamp.Text = "KIOSK"
+$lblSubStamp.Font = New-Object System.Drawing.Font("Segoe UI", 6.5, [System.Drawing.FontStyle]::Bold)
 $lblSubStamp.ForeColor = [System.Drawing.Color]::FromArgb(255, 200, 200)
-$lblSubStamp.Location = New-Object System.Drawing.Point(0, 34)
+$lblSubStamp.Location = New-Object System.Drawing.Point(0, 32)
 $lblSubStamp.Size = New-Object System.Drawing.Size(56, 16)
 $lblSubStamp.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $stampBox.Controls.Add($lblSubStamp)
@@ -59,17 +59,17 @@ $titleMain.AutoSize = $true
 $headerPanel.Controls.Add($titleMain)
 
 $badgeJp = New-Object System.Windows.Forms.Label
-$badgeJp.Text = "自販機"
-$badgeJp.Font = New-Object System.Drawing.Font("MS Gothic", 9.5, [System.Drawing.FontStyle]::Bold)
+$badgeJp.Text = "SMART VEND"
+$badgeJp.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
 $badgeJp.BackColor = [System.Drawing.Color]::FromArgb(243, 156, 18) # --retro-mustard
 $badgeJp.ForeColor = [System.Drawing.Color]::FromArgb(18, 21, 27)
-$badgeJp.Location = New-Object System.Drawing.Point(232, 21)
-$badgeJp.Size = New-Object System.Drawing.Size(52, 20)
+$badgeJp.Location = New-Object System.Drawing.Point(236, 20)
+$badgeJp.Size = New-Object System.Drawing.Size(86, 22)
 $badgeJp.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $headerPanel.Controls.Add($badgeJp)
 
 $titleSub = New-Object System.Windows.Forms.Label
-$titleSub.Text = "SMART STATIONERY KIOSK CONTROL CONSOLE | GROUP SkiDB"
+$titleSub.Text = "SMART STATIONERY KIOSK CONTROL CONSOLE | GROUP SkiDB (IV-CINS)"
 $titleSub.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
 $titleSub.ForeColor = [System.Drawing.Color]::FromArgb(155, 166, 190)
 $titleSub.Location = New-Object System.Drawing.Point(90, 48)
