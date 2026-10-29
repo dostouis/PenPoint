@@ -198,10 +198,10 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             font-size: 1.35rem;
             letter-spacing: 0.02em;
             color: var(--retro-cream);
-            display: flex;
-            align-items: baseline;
-            gap: 6px;
-            line-height: 1.1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
         }
 
         .brand-jp-badge {
@@ -210,10 +210,15 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             font-weight: 900;
             color: #12151b;
             background: var(--retro-mustard);
-            padding: 2px 6px;
-            border-radius: 4px;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
-            letter-spacing: 0.02em;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 8px;
+            border-radius: 5px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.25);
+            letter-spacing: 0.04em;
+            transform: translateY(-2px);
         }
 
         .brand-sub-strip {

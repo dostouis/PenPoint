@@ -234,20 +234,29 @@ if ($logsRes) {
         .brand-text h1 {
             font-family: var(--font-display);
             font-size: 1.25rem;
+            line-height: 1;
             color: var(--retro-cream);
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
         }
 
         .brand-jp-badge {
-            font-size: 0.62rem;
+            font-size: 0.65rem;
             font-family: var(--font-body);
             font-weight: 900;
+            letter-spacing: 0.04em;
             color: #12151b;
             background: var(--retro-mustard);
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 5px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-2px);
         }
 
         .nav-actions {
@@ -531,7 +540,7 @@ if ($logsRes) {
                     <span class="sign-sub-tag">AUDIT</span>
                 </div>
                 <div class="brand-text">
-                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">SENSORS & AUDIT</span></h1>
+                    <h1><span><?= APP_NAME ?></span><span class="brand-jp-badge">SENSORS & AUDIT</span></h1>
                 </div>
             </a>
 
