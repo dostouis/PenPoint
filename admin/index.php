@@ -713,15 +713,35 @@ if (empty($catLabels)) {
             letter-spacing: 0.05em;
         }
 
-        /* Content Split */
-        .content-split {
+        /* Balanced Command Decks */
+        .lower-deck-split {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
         @media (max-width: 992px) {
-            .content-split { grid-template-columns: 1fr; }
+            .lower-deck-split { grid-template-columns: 1fr; }
+        }
+
+        .telemetry-feed-scroll {
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .telemetry-feed-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .telemetry-feed-scroll::-webkit-scrollbar-track {
+            background: #181d27;
+            border-radius: 999px;
+        }
+
+        .telemetry-feed-scroll::-webkit-scrollbar-thumb {
+            background: #3d475c;
+            border-radius: 999px;
         }
 
         /* Panel Cards */
@@ -1040,236 +1060,219 @@ if (empty($catLabels)) {
             </div>
         </div>
 
-        <!-- Main Content Split -->
-        <div class="content-split">
-            
-            <!-- Left Column: Slots Matrix & Refund Queue -->
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <!-- Slots Inventory Matrix (6-Slot 4-Tier Cabinet) -->
-                <div class="retro-panel-card">
-                    <div class="panel-header-strip">
-                        <div class="panel-heading">
-                            <i data-lucide="server" style="color: var(--retro-mustard); width: 18px; height: 18px;"></i>
-                            Vending Slot Inventory Matrix (Unit: <?= DEFAULT_MACHINE_ID ?>)
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <button type="button" class="btn-restock-all" onclick="restockAllMax()">
-                                <i data-lucide="package-plus" style="width: 14px; height: 14px;"></i>
-                                Restock All to Max Capacity
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Slot / Tier</th>
-                                    <th>Item</th>
-                                    <th>Price</th>
-                                    <th>Stock Level</th>
-                                    <th>Status</th>
-                                    <th>Dispensed</th>
-                                    <th>Quick Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($products as $p): ?>
-                                    <?php 
-                                        $isOut = $p['stock'] <= 0;
-                                        $isLow = $p['stock'] <= $p['low_stock_threshold'] && !$isOut;
-                                        $tierNum = $p['tier_number'] ?? ($p['slot_number'] <= 3 ? $p['slot_number'] : 4);
-                                    ?>
-                                    <tr>
-                                        <td>
-                                            <span class="slot-tag">#<?= str_pad($p['slot_number'], 2, '0', STR_PAD_LEFT) ?></span>
-                                            <span style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--retro-cream-muted); margin-left: 4px;">Tier <?= $tierNum ?></span>
-                                        </td>
-                                        <td>
-                                            <div style="font-weight: 800; color: var(--retro-cream);"><?= htmlspecialchars($p['name']) ?></div>
-                                            <div style="font-size: 0.72rem; color: var(--retro-cream-muted); margin-top: 2px;">
-                                                <?= htmlspecialchars($p['category']) ?>
-                                            </div>
-                                        </td>
-                                        <td style="font-weight: 800; font-family: var(--font-mono); color: #ffeaa7;">
-                                            <?= CURRENCY_SYMBOL ?><?= number_format($p['price'], 2) ?>
-                                        </td>
-                                        <td>
-                                            <strong style="color: #ffffff;"><?= $p['stock'] ?></strong> / <?= $p['max_capacity'] ?>
-                                        </td>
-                                        <td>
-                                            <?php if ($isOut): ?>
-                                                <span class="badge-status badge-out">EMPTY</span>
-                                            <?php elseif ($isLow): ?>
-                                                <span class="badge-status badge-low">LOW</span>
-                                            <?php else: ?>
-                                                <span class="badge-status badge-normal">OPTIMAL</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td style="font-family: var(--font-mono); font-weight: 700; color: #74b9ff;">
-                                            <?= $p['dispensed_count'] ?>
-                                        </td>
-                                        <td>
-                                            <div style="display: flex; align-items: center; gap: 5px;">
-                                                <button class="retro-btn-quick" onclick="quickAddStock(<?= $p['slot_number'] ?>, 5)" title="Add +5 units to this slot">
-                                                    +5
-                                                </button>
-                                                <button class="retro-btn-quick" onclick="quickAddStock(<?= $p['slot_number'] ?>, <?= ($p['max_capacity'] - $p['stock']) ?>)" title="Fill to maximum capacity">
-                                                    Max
-                                                </button>
-                                                <button class="btn-restock-action" onclick="openRestockModal(<?= $p['slot_number'] ?>, '<?= htmlspecialchars(addslashes($p['name'])) ?>', <?= $p['stock'] ?>)">
-                                                    <i data-lucide="edit-3" style="width: 12px; height: 12px; color: var(--retro-mustard);"></i>
-                                                    Set
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+        <!-- Slots Inventory Matrix (6-Slot 4-Tier Cabinet) - Full Width -->
+        <div class="retro-panel-card">
+            <div class="panel-header-strip">
+                <div class="panel-heading">
+                    <i data-lucide="server" style="color: var(--retro-mustard); width: 18px; height: 18px;"></i>
+                    Vending Slot Inventory Matrix (Unit: <?= DEFAULT_MACHINE_ID ?>)
                 </div>
-
-                <!-- Dedicated Refund-Pending Review Queue -->
-                <div class="retro-panel-card">
-                    <div class="panel-header-strip">
-                        <div class="panel-heading">
-                            <i data-lucide="rotate-ccw" style="color: <?= count($pendingRefunds) > 0 ? '#ff7675' : '#2ecc71' ?>; width: 18px; height: 18px;"></i>
-                            Refund-Pending Queue (Optical Drop Failures)
-                        </div>
-                        <span class="badge-status <?= count($pendingRefunds) > 0 ? 'badge-out' : 'badge-normal' ?>">
-                            <?= count($pendingRefunds) ?> PENDING
-                        </span>
-                    </div>
-
-                    <?php if (empty($pendingRefunds)): ?>
-                        <div style="font-size: 0.8rem; color: var(--retro-cream-muted); padding: 12px 0; text-align: center;">
-                            <i data-lucide="check-check" style="width: 24px; height: 24px; color: #2ecc71; margin-bottom: 4px; display: inline-block;"></i><br>
-                            All dispense cycles verified by optical break-beam sensors. No pending refunds!
-                        </div>
-                    <?php else: ?>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Ref / Key</th>
-                                        <th>Item & Slot</th>
-                                        <th>Amount</th>
-                                        <th>Sensor Reason</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pendingRefunds as $ref): ?>
-                                        <tr>
-                                            <td>
-                                                <div style="font-family: var(--font-mono); font-weight: 800; color: #ffeaa7; font-size: 0.78rem;"><?= htmlspecialchars($ref['reference_no'] ?? $ref['transaction_key']) ?></div>
-                                                <div style="font-size: 0.68rem; color: var(--retro-cream-muted);"><?= date('M d, H:i', strtotime($ref['created_at'])) ?></div>
-                                            </td>
-                                            <td>
-                                                <strong style="color: var(--retro-cream);"><?= htmlspecialchars($ref['product_name']) ?></strong>
-                                                <div style="font-size: 0.7rem; color: var(--retro-cream-muted);">Slot #<?= $ref['slot_number'] ?></div>
-                                            </td>
-                                            <td style="font-family: var(--font-mono); font-weight: 800; color: #ff7675;">
-                                                <?= CURRENCY_SYMBOL ?><?= number_format($ref['amount'], 2) ?>
-                                            </td>
-                                            <td style="font-size: 0.74rem; color: #ff7675;">
-                                                IR Drop Beam Timeout (Retried 1x)
-                                            </td>
-                                            <td>
-                                                <button class="btn-restock-action" style="border-color: #2ecc71; color: #2ecc71;" onclick="issueRefund('<?= htmlspecialchars($ref['transaction_key']) ?>')">
-                                                    <i data-lucide="check" style="width: 13px; height: 13px;"></i>
-                                                    Approve Refund
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-restock-all" onclick="restockAllMax()">
+                        <i data-lucide="package-plus" style="width: 14px; height: 14px;"></i>
+                        Restock All to Max Capacity
+                    </button>
                 </div>
             </div>
 
-            <!-- Right Column: Machine Telemetry, Sensors & Logs -->
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                
-                <!-- 4-Tier Optical IR Break-Beam Sensors & Door Switch Diagnostics -->
-                <div class="retro-panel-card">
-                    <div class="panel-header-strip">
-                        <div class="panel-heading">
-                            <i data-lucide="cpu" style="color: #74b9ff; width: 18px; height: 18px;"></i>
-                            Cabinet Sensor Diagnostics
-                        </div>
-                        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: #4ade80;">LIVE ESP32</span>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Slot / Tier</th>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th>Stock Level</th>
+                            <th>Status</th>
+                            <th>Dispensed</th>
+                            <th>Quick Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($products as $p): ?>
+                            <?php 
+                                $isOut = $p['stock'] <= 0;
+                                $isLow = $p['stock'] <= $p['low_stock_threshold'] && !$isOut;
+                                $tierNum = $p['tier_number'] ?? ($p['slot_number'] <= 3 ? $p['slot_number'] : 4);
+                            ?>
+                            <tr>
+                                <td>
+                                    <span class="slot-tag">#<?= str_pad($p['slot_number'], 2, '0', STR_PAD_LEFT) ?></span>
+                                    <span style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--retro-cream-muted); margin-left: 4px;">Tier <?= $tierNum ?></span>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 800; color: var(--retro-cream);"><?= htmlspecialchars($p['name']) ?></div>
+                                    <div style="font-size: 0.72rem; color: var(--retro-cream-muted); margin-top: 2px;">
+                                        <?= htmlspecialchars($p['category']) ?>
+                                    </div>
+                                </td>
+                                <td style="font-weight: 800; font-family: var(--font-mono); color: #ffeaa7;">
+                                    <?= CURRENCY_SYMBOL ?><?= number_format($p['price'], 2) ?>
+                                </td>
+                                <td>
+                                    <strong style="color: #ffffff;"><?= $p['stock'] ?></strong> / <?= $p['max_capacity'] ?>
+                                </td>
+                                <td>
+                                    <?php if ($isOut): ?>
+                                        <span class="badge-status badge-out">EMPTY</span>
+                                    <?php elseif ($isLow): ?>
+                                        <span class="badge-status badge-low">LOW</span>
+                                    <?php else: ?>
+                                        <span class="badge-status badge-normal">OPTIMAL</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="font-family: var(--font-mono); font-weight: 700; color: #74b9ff;">
+                                    <?= $p['dispensed_count'] ?>
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <button class="retro-btn-quick" onclick="quickAddStock(<?= $p['slot_number'] ?>, 5)" title="Add +5 units to this slot">
+                                            +5
+                                        </button>
+                                        <button class="retro-btn-quick" onclick="quickAddStock(<?= $p['slot_number'] ?>, <?= ($p['max_capacity'] - $p['stock']) ?>)" title="Fill to maximum capacity">
+                                            Max
+                                        </button>
+                                        <button class="btn-restock-action" onclick="openRestockModal(<?= $p['slot_number'] ?>, '<?= htmlspecialchars(addslashes($p['name'])) ?>', <?= $p['stock'] ?>)">
+                                            <i data-lucide="edit-3" style="width: 12px; height: 12px; color: var(--retro-mustard);"></i>
+                                            Set
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <?php if (!empty($pendingRefunds)): ?>
+            <!-- High-Priority Refund Review Queue (Only shown when pending drop timeouts exist) -->
+            <div class="retro-panel-card" style="border-color: #ff7675; box-shadow: 0 6px 0 #7e0c0d, 0 12px 24px rgba(0, 0, 0, 0.5);">
+                <div class="panel-header-strip">
+                    <div class="panel-heading" style="color: #ff7675;">
+                        <i data-lucide="alert-octagon" style="color: #ff7675; width: 18px; height: 18px;"></i>
+                        Action Required: Refund-Pending Optical Drop Queue (<?= count($pendingRefunds) ?>)
                     </div>
+                    <span class="badge-status badge-out"><?= count($pendingRefunds) ?> UNRESOLVED</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ref / Key</th>
+                                <th>Item & Slot</th>
+                                <th>Amount</th>
+                                <th>Sensor Trigger</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pendingRefunds as $ref): ?>
+                                <tr>
+                                    <td>
+                                        <div style="font-family: var(--font-mono); font-weight: 800; color: #ffeaa7; font-size: 0.78rem;"><?= htmlspecialchars($ref['reference_no'] ?? $ref['transaction_key']) ?></div>
+                                        <div style="font-size: 0.68rem; color: var(--retro-cream-muted);"><?= date('M d, H:i', strtotime($ref['created_at'])) ?></div>
+                                    </td>
+                                    <td>
+                                        <strong style="color: var(--retro-cream);"><?= htmlspecialchars($ref['product_name']) ?></strong>
+                                        <div style="font-size: 0.7rem; color: var(--retro-cream-muted);">Slot #<?= $ref['slot_number'] ?></div>
+                                    </td>
+                                    <td style="font-family: var(--font-mono); font-weight: 800; color: #ff7675;">
+                                        <?= CURRENCY_SYMBOL ?><?= number_format($ref['amount'], 2) ?>
+                                    </td>
+                                    <td style="font-size: 0.74rem; color: #ff7675;">
+                                        Optical Break-Beam Timeout
+                                    </td>
+                                    <td>
+                                        <button class="btn-restock-action" style="border-color: #2ecc71; color: #2ecc71;" onclick="issueRefund('<?= htmlspecialchars($ref['transaction_key']) ?>')">
+                                            <i data-lucide="check" style="width: 13px; height: 13px;"></i>
+                                            Approve Refund
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
 
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 1 Break-Beam IR</div>
-                                <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Long Bond Paper Exit</div>
-                            </div>
-                            <span class="badge-status <?= $sensorData['tier_1_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
-                                <?= htmlspecialchars($sensorData['tier_1_ir']) ?>
-                            </span>
-                        </div>
-
-                        <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 2 Break-Beam IR</div>
-                                <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">A4 Bond Paper Exit</div>
-                            </div>
-                            <span class="badge-status <?= $sensorData['tier_2_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
-                                <?= htmlspecialchars($sensorData['tier_2_ir']) ?>
-                            </span>
-                        </div>
-
-                        <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 3 Break-Beam IR</div>
-                                <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Short Bond Paper Exit</div>
-                            </div>
-                            <span class="badge-status <?= $sensorData['tier_3_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
-                                <?= htmlspecialchars($sensorData['tier_3_ir']) ?>
-                            </span>
-                        </div>
-
-                        <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 4 Break-Beam IR</div>
-                                <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Stationery Drop Chute (Slots 4-6)</div>
-                            </div>
-                            <span class="badge-status <?= $sensorData['tier_4_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
-                                <?= htmlspecialchars($sensorData['tier_4_ir']) ?>
-                            </span>
-                        </div>
-
-                        <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; border-left: 3px solid <?= $sensorData['door_switch'] === 'CLOSED' ? '#2ecc71' : '#e74c3c' ?>;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Cabinet Door Limit Switch</div>
-                                <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Anti-Tamper & Forced-Entry Alert</div>
-                            </div>
-                            <span class="badge-status <?= $sensorData['door_switch'] === 'CLOSED' ? 'badge-normal' : 'badge-out' ?>">
-                                <?= $sensorData['door_switch'] === 'CLOSED' ? 'LOCKED / CLOSED' : 'ALARM: TAMPER OPEN' ?>
-                            </span>
-                        </div>
+        <!-- Balanced Lower Command Deck: Diagnostics (Left) & Telemetry Drop Feed (Right) -->
+        <div class="lower-deck-split">
+            
+            <!-- Left Panel: Machine Telemetry & ESP32 Sensors -->
+            <div class="retro-panel-card">
+                <div class="panel-header-strip">
+                    <div class="panel-heading">
+                        <i data-lucide="cpu" style="color: #74b9ff; width: 18px; height: 18px;"></i>
+                        Cabinet Sensor Diagnostics
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: #4ade80;">LIVE ESP32</span>
+                        <a href="activity_logs.php" class="retro-link-btn" style="padding: 3px 8px; font-size: 0.7rem;" title="View Sensors & Full Audit Trail">
+                            Audit ↗
+                        </a>
                     </div>
                 </div>
 
-                <!-- Machines Unit Status -->
-                <div class="retro-panel-card">
-                    <div class="panel-header-strip">
-                        <div class="panel-heading">
-                            <i data-lucide="radio" style="color: #2ecc71; width: 18px; height: 18px;"></i>
-                            Connected Unit
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 1 Break-Beam IR</div>
+                            <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Long Bond Paper Exit</div>
                         </div>
+                        <span class="badge-status <?= $sensorData['tier_1_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
+                            <?= htmlspecialchars($sensorData['tier_1_ir']) ?>
+                        </span>
                     </div>
+
+                    <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 2 Break-Beam IR</div>
+                            <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">A4 Bond Paper Exit</div>
+                        </div>
+                        <span class="badge-status <?= $sensorData['tier_2_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
+                            <?= htmlspecialchars($sensorData['tier_2_ir']) ?>
+                        </span>
+                    </div>
+
+                    <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 3 Break-Beam IR</div>
+                            <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Short Bond Paper Exit</div>
+                        </div>
+                        <span class="badge-status <?= $sensorData['tier_3_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
+                            <?= htmlspecialchars($sensorData['tier_3_ir']) ?>
+                        </span>
+                    </div>
+
+                    <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Tier 4 Break-Beam IR</div>
+                            <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Stationery Drop Chute (Slots 4-6)</div>
+                        </div>
+                        <span class="badge-status <?= $sensorData['tier_4_ir'] === 'CLEAR' ? 'badge-normal' : 'badge-out' ?>">
+                            <?= htmlspecialchars($sensorData['tier_4_ir']) ?>
+                        </span>
+                    </div>
+
+                    <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; border-left: 3px solid <?= $sensorData['door_switch'] === 'CLOSED' ? '#2ecc71' : '#e74c3c' ?>;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.8rem; color: var(--retro-cream);">Cabinet Door Limit Switch</div>
+                            <div style="font-size: 0.68rem; color: var(--retro-cream-muted);">Anti-Tamper Monitor</div>
+                        </div>
+                        <span class="badge-status <?= $sensorData['door_switch'] === 'CLOSED' ? 'badge-normal' : 'badge-out' ?>">
+                            <?= $sensorData['door_switch'] === 'CLOSED' ? 'LOCKED / CLOSED' : 'ALARM: TAMPER OPEN' ?>
+                        </span>
+                    </div>
+
+                    <!-- Connected Machine Badge -->
                     <?php foreach ($machines as $m): ?>
-                        <div style="background: #181d27; border: 1px solid #333a4c; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: 800; font-size: 0.9rem; color: var(--retro-cream);"><?= htmlspecialchars($m['machine_id']) ?></div>
-                                <div style="font-size: 0.72rem; color: var(--retro-cream-muted);"><?= htmlspecialchars($m['location']) ?></div>
+                        <div style="background: #151922; border: 1px solid #2d3545; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="hard-drive" style="width: 14px; height: 14px; color: #2ecc71;"></i>
+                                <span style="font-weight: 800; font-size: 0.78rem; font-family: var(--font-mono); color: var(--retro-cream);"><?= htmlspecialchars($m['machine_id']) ?></span>
+                                <span style="font-size: 0.7rem; color: var(--retro-cream-muted);">• <?= htmlspecialchars($m['location']) ?></span>
                             </div>
                             <span class="badge-status <?= $m['status'] === 'ACTIVE' ? 'badge-normal' : 'badge-out' ?>">
                                 <?= htmlspecialchars($m['status']) ?>
@@ -1277,33 +1280,49 @@ if (empty($catLabels)) {
                         </div>
                     <?php endforeach; ?>
                 </div>
+            </div>
 
-                <!-- IR Dispense Logs Feed -->
-                <div class="retro-panel-card" style="flex: 1;">
-                    <div class="panel-header-strip">
-                        <div class="panel-heading">
-                            <i data-lucide="activity" style="color: #74b9ff; width: 18px; height: 18px;"></i>
-                            Telemetry Drop Feed
-                        </div>
+            <!-- Right Panel: Live Drop & Telemetry Feed -->
+            <div class="retro-panel-card">
+                <div class="panel-header-strip">
+                    <div class="panel-heading">
+                        <i data-lucide="activity" style="color: #74b9ff; width: 18px; height: 18px;"></i>
+                        Live Drop & Telemetry Feed
                     </div>
-
-                    <div style="display: flex; flex-direction: column;">
-                        <?php foreach ($recentLogs as $log): ?>
-                            <div class="log-item">
-                                <div class="log-icon-chip">
-                                    <i data-lucide="zap" style="width: 14px; height: 14px;"></i>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div style="color: var(--retro-cream); font-weight: 600; line-height: 1.4;"><?= htmlspecialchars($log['details']) ?></div>
-                                    <div style="font-size: 0.68rem; color: var(--retro-cream-muted); font-family: var(--font-mono); margin-top: 3px;">
-                                        <?= date('M d, g:i A', strtotime($log['created_at'])) ?> • <?= htmlspecialchars($log['machine_id'] ?? 'SYSTEM') ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 0.68rem; color: #ffeaa7;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 6px #2ecc71;"></span>
+                            LIVE STREAM
+                        </span>
+                        <a href="transaction_logs.php" class="retro-link-btn" style="padding: 3px 8px; font-size: 0.7rem;" title="View Dispense Transaction History">
+                            Full Logs ↗
+                        </a>
                     </div>
                 </div>
 
+                <div class="telemetry-feed-scroll">
+                    <?php if (empty($recentLogs)): ?>
+                        <div style="text-align: center; color: var(--retro-cream-muted); padding: 30px 0; font-size: 0.8rem;">
+                            No recent drop events recorded.
+                        </div>
+                    <?php else: ?>
+                        <div style="display: flex; flex-direction: column;">
+                            <?php foreach ($recentLogs as $log): ?>
+                                <div class="log-item">
+                                    <div class="log-icon-chip">
+                                        <i data-lucide="zap" style="width: 14px; height: 14px;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="color: var(--retro-cream); font-weight: 600; font-size: 0.78rem; line-height: 1.4;"><?= htmlspecialchars($log['details']) ?></div>
+                                        <div style="font-size: 0.68rem; color: var(--retro-cream-muted); font-family: var(--font-mono); margin-top: 3px;">
+                                            <?= date('M d, g:i A', strtotime($log['created_at'])) ?> • <?= htmlspecialchars($log['machine_id'] ?? 'SYSTEM') ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
 
         </div>
