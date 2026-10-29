@@ -26,6 +26,8 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- html2canvas for Receipt Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --retro-bg: #151821;
@@ -1374,6 +1376,35 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             justify-content: space-between;
         }
 
+        .btn-receipt-download {
+            width: 100%;
+            background: #181d28;
+            border: 1.5px solid #364157;
+            color: #74b9ff;
+            border-radius: 6px;
+            padding: 7px;
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-receipt-download:hover {
+            background: #242c3d;
+            border-color: #74b9ff;
+            color: #ffffff;
+        }
+
+        .btn-receipt-download:active {
+            transform: scale(0.98);
+        }
+
         .drop-en-title {
             font-family: var(--font-display);
             font-size: 1.55rem;
@@ -1914,6 +1945,10 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                 <span>TOTAL PAID:</span>
                 <span id="receiptTotalAmount">₱45.00</span>
             </div>
+            <button type="button" class="btn-receipt-download" id="downloadReceiptBtn" onclick="downloadReceiptImage()">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                <span id="downloadBtnText">Save e-Receipt (PNG)</span>
+            </button>
         </div>
 
         <div class="tray-takeout-panel" id="dispenseDoneAction">
@@ -2320,6 +2355,43 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                 title.innerText = "Connection Timeout";
                 msg.innerText = "Could not communicate with the vending machine microcontroller.";
                 actionBtn.style.display = "block";
+            }
+        }
+
+        async function downloadReceiptImage() {
+            playRetroSound('click');
+            const receipt = document.getElementById('receiptPrintout');
+            const downloadBtn = document.getElementById('downloadReceiptBtn');
+            const btnText = document.getElementById('downloadBtnText');
+
+            if (!receipt || typeof html2canvas === 'undefined') return;
+
+            // Temporarily hide the download button so it doesn't appear on the captured image
+            downloadBtn.style.display = 'none';
+            btnText.innerText = 'Capturing...';
+
+            try {
+                const canvas = await html2canvas(receipt, {
+                    scale: 2, // High resolution for crisp phone displays
+                    backgroundColor: '#fffdf7',
+                    useCORS: true
+                });
+
+                // Restore download button
+                downloadBtn.style.display = 'flex';
+                btnText.innerText = 'Saved!';
+                setTimeout(() => { btnText.innerText = 'Save e-Receipt (PNG)'; }, 2500);
+
+                // Trigger direct file download
+                const ref = document.getElementById('receiptRef')?.innerText || 'RECEIPT';
+                const link = document.createElement('a');
+                link.download = `PenPoint_${ref}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error("Receipt capture error:", err);
+                downloadBtn.style.display = 'flex';
+                btnText.innerText = 'Save e-Receipt (PNG)';
             }
         }
 
