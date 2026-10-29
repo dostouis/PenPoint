@@ -161,6 +161,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* Custom Themed Scrollbar matching Retro Machine Chassis */
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #3d465c #151821;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #151821;
+            border-left: 1px solid #232938;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a445b;
+            border-radius: 9999px;
+            border: 1px solid #1c2230;
+            transition: background 0.2s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #505e7e;
+        }
+
+        ::-webkit-scrollbar-thumb:active {
+            background: #e8a735;
+        }
+
         body {
             background: var(--bg);
             color: var(--text);
