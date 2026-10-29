@@ -12,6 +12,24 @@ require_once __DIR__ . '/../models/MachineModel.php';
 $productModel = new ProductModel();
 $products = $productModel->getAllProducts();
 $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
+
+// Compute dynamic category counts for chips
+$totalCount = count($products);
+$categoryCounts = [
+    'Paper' => 0,
+    'Pens' => 0,
+    'Pencils' => 0,
+    'Examination' => 0
+];
+foreach ($products as $p) {
+    $cat = $p['category'] ?? '';
+    foreach (array_keys($categoryCounts) as $k) {
+        if (stripos($cat, $k) !== false) {
+            $categoryCounts[$k]++;
+            break;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1774,19 +1792,19 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             </button>
             <div class="retro-slider-track" id="categorySlider">
                 <button class="retro-chip active" onclick="filterCategory('All', this)">
-                    <span class="retro-chip-indicator"></span> All Items (6)
+                    <span class="retro-chip-indicator"></span> All Items (<?= $totalCount ?>)
                 </button>
                 <button class="retro-chip" onclick="filterCategory('Paper', this)">
-                    <span class="retro-chip-indicator"></span> Paper Supplies (3)
+                    <span class="retro-chip-indicator"></span> Paper Supplies (<?= $categoryCounts['Paper'] ?>)
                 </button>
                 <button class="retro-chip" onclick="filterCategory('Pens', this)">
-                    <span class="retro-chip-indicator"></span> Pens & Inks
+                    <span class="retro-chip-indicator"></span> Pens & Inks (<?= $categoryCounts['Pens'] ?>)
                 </button>
                 <button class="retro-chip" onclick="filterCategory('Pencils', this)">
-                    <span class="retro-chip-indicator"></span> Exam Pencils
+                    <span class="retro-chip-indicator"></span> Exam Pencils (<?= $categoryCounts['Pencils'] ?>)
                 </button>
                 <button class="retro-chip" onclick="filterCategory('Examination', this)">
-                    <span class="retro-chip-indicator"></span> Blue Books
+                    <span class="retro-chip-indicator"></span> Blue Books (<?= $categoryCounts['Examination'] ?>)
                 </button>
             </div>
             <button class="retro-nav-arrow" onclick="slideCategory(1)" aria-label="Slide Right">
