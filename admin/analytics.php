@@ -1,8 +1,8 @@
 <?php
 // admin/analytics.php
 // PenPoint Sales Analytics & Product Demand Trends
-// Theme: Japanese Retro Vending Maintenance & Telemetry Console (管理者・保全管理コンソール)
-// English-First with Retro Kanji Accent Stamps
+// Theme: Japanese Retro Vending Maintenance & Telemetry Console
+// English Console
 
 date_default_timezone_set('Asia/Manila');
 
@@ -78,7 +78,7 @@ if (empty($catLabels)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#181c24">
-    <title><?= APP_NAME ?> — Sales & Demand Analytics (統計分析)</title>
+    <title><?= APP_NAME ?> — Sales & Demand Analytics</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -377,11 +377,11 @@ if (empty($catLabels)) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji">統計</span>
-                    <span class="sign-sub-tag">DATA</span>
+                    <span class="sign-kanji" style="font-size: 0.68rem; letter-spacing: 0.05em;">STAT</span>
+                    <span class="sign-sub-tag">ANALYTICS</span>
                 </div>
                 <div class="brand-text">
-                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">統計分析</span></h1>
+                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">ANALYTICS</span></h1>
                 </div>
             </a>
 

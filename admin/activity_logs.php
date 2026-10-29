@@ -1,8 +1,8 @@
 <?php
 // admin/activity_logs.php
 // PenPoint Machine Sensor Telemetry & Audit Logs
-// Theme: Japanese Retro Vending Maintenance & Telemetry Console (管理者・保全管理コンソール)
-// English-First with Retro Kanji Accent Stamps
+// Theme: Japanese Retro Vending Maintenance & Telemetry Console
+// English Console
 
 date_default_timezone_set('Asia/Manila');
 
@@ -128,7 +128,7 @@ if ($logsRes) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#181c24">
-    <title><?= APP_NAME ?> — Sensor Diagnostics & System Audit (機器・監査ログ)</title>
+    <title><?= APP_NAME ?> — Sensor Diagnostics & System Audit</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -527,11 +527,11 @@ if ($logsRes) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji">監査</span>
+                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">SYS</span>
                     <span class="sign-sub-tag">AUDIT</span>
                 </div>
                 <div class="brand-text">
-                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">センサー・監査</span></h1>
+                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">SENSORS & AUDIT</span></h1>
                 </div>
             </a>
 

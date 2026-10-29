@@ -1,8 +1,8 @@
 <?php
 // admin/transaction_logs.php
 // PenPoint Dispense Logs & Cashless Transaction History
-// Theme: Japanese Retro Vending Maintenance & Telemetry Console (管理者・保全管理コンソール)
-// English-First with Retro Kanji Accent Stamps
+// Theme: Japanese Retro Vending Maintenance & Telemetry Console
+// English Console
 
 date_default_timezone_set('Asia/Manila');
 
@@ -144,7 +144,7 @@ if ($listRes) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#181c24">
-    <title><?= APP_NAME ?> — Dispense Logs (出庫・決済記録)</title>
+    <title><?= APP_NAME ?> — Dispense Logs</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -539,11 +539,11 @@ if ($listRes) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji">出庫</span>
-                    <span class="sign-sub-tag">LOG</span>
+                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">TXN</span>
+                    <span class="sign-sub-tag">LOGS</span>
                 </div>
                 <div class="brand-text">
-                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">出庫記録</span></h1>
+                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">DISPENSE LOGS</span></h1>
                 </div>
             </a>
 

@@ -1,8 +1,8 @@
 <?php
 // admin/index.php
 // PenPoint Admin & Telemetry Dashboard
-// Theme: Japanese Retro Vending Maintenance & Telemetry Console (管理者・保全管理コンソール)
-// English-First with Retro Kanji Accent Stamps
+// Theme: Japanese Retro Vending Maintenance & Telemetry Console
+// English Console
 
 date_default_timezone_set('Asia/Manila');
 
@@ -257,7 +257,7 @@ if (empty($_SESSION['penpoint_admin'])) {
 </head>
 <body>
     <div class="login-chassis">
-        <span class="operator-stamp-tag">保守管理 // OPERATOR SECURITY</span>
+        <span class="operator-stamp-tag">OPERATOR // SECURE CONSOLE</span>
         <div class="lock-icon-housing">
             <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
         </div>
@@ -433,7 +433,7 @@ if (empty($catLabels)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#181c24">
-    <title><?= APP_NAME ?> Operator Hub — 自販機保全コンソール</title>
+    <title><?= APP_NAME ?> Operator Hub — Maintenance Console</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -949,11 +949,11 @@ if (empty($catLabels)) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji">保全</span>
+                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">ADM</span>
                     <span class="sign-sub-tag">HUB</span>
                 </div>
                 <div class="brand-text">
-                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">保全管理</span></h1>
+                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">OPERATOR HUB</span></h1>
                 </div>
             </a>
 
