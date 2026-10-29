@@ -489,20 +489,12 @@ $logModel->close();
             <p>Admin Dashboard</p>
         </div>
         <nav class="nav">
-            <div class="nav-label">Overview</div>
-            <a href="index.php" class="nav-item"><span class="icon">📊</span> Dashboard</a>
-            
-            <div class="nav-label">Data</div>
-            <a href="index.php?page=users" class="nav-item"><span class="icon">👤</span> Users</a>
-            <a href="index.php?page=transactions" class="nav-item"><span class="icon">📋</span> Transactions</a>
-            <a href="index.php?page=leaderboard" class="nav-item"><span class="icon">🏆</span> Leaderboard</a>
+            <div class="nav-label">PenPoint Console</div>
+            <a href="index.php" class="nav-item"><span class="icon">🗂️</span> Slots Matrix</a>
+            <a href="transaction_logs.php" class="nav-item"><span class="icon">🧾</span> Dispense Logs</a>
             <a href="analytics.php" class="nav-item"><span class="icon">📈</span> Analytics</a>
-            
-            <div class="nav-label">System</div>
-            <a href="index.php?page=rewards" class="nav-item"><span class="icon">🎁</span> Rewards</a>
-            <a href="index.php?page=machines" class="nav-item"><span class="icon">🤖</span> Machines</a>
-            <a href="activity_logs.php" class="nav-item active"><span class="icon">📜</span> Activity Logs</a>
-            <a href="transaction_logs.php" class="nav-item"><span class="icon">📊</span> Transaction Logs</a>
+            <a href="activity_logs.php" class="nav-item active"><span class="icon">⚡</span> Sensors & Audit</a>
+            <a href="../public/index.php" class="nav-item" target="_blank"><span class="icon">🏪</span> Student Kiosk ↗</a>
         </nav>
         <div class="sidebar-footer">
             <div class="machine-status">

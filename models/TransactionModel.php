@@ -174,6 +174,55 @@ class TransactionModel {
         return $rows;
     }
 
+    // Get 7-day sales trend for Chart.js
+    public function getDailySalesTrend($days = 7) {
+        $stmt = $this->conn->prepare("
+            SELECT 
+                DATE(created_at) as sale_date,
+                DATE_FORMAT(created_at, '%b %d') as date_label,
+                COUNT(*) as orders_count,
+                COALESCE(SUM(amount), 0) as total_revenue
+            FROM transactions
+            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+              AND dispense_status != 'REFUND_PENDING'
+            GROUP BY DATE(created_at), DATE_FORMAT(created_at, '%b %d')
+            ORDER BY sale_date ASC
+        ");
+        if (!$stmt) return [];
+        $stmt->bind_param("i", $days);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $data = [];
+        while ($r = $res->fetch_assoc()) {
+            $data[] = $r;
+        }
+        $stmt->close();
+        return $data;
+    }
+
+    // Get category breakdown
+    public function getCategoryBreakdown() {
+        $query = "
+            SELECT 
+                COALESCE(p.category, 'Stationery') as category,
+                COUNT(t.id) as order_count,
+                COALESCE(SUM(t.amount), 0) as total_revenue
+            FROM transactions t
+            LEFT JOIN products p ON t.product_id = p.id
+            WHERE t.dispense_status != 'REFUND_PENDING'
+            GROUP BY p.category
+            ORDER BY total_revenue DESC
+        ";
+        $res = $this->conn->query($query);
+        $data = [];
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $data[] = $r;
+            }
+        }
+        return $data;
+    }
+
     // Get transaction count
     public function getCount() {
         $result = $this->conn->query("SELECT COUNT(*) as count FROM transactions");

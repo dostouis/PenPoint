@@ -324,6 +324,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
         exit;
     }
+    if ($_POST['action'] === 'quick_restock') {
+        $slot = intval($_POST['slot_number'] ?? 0);
+        $addQty = intval($_POST['add_qty'] ?? 5);
+        if ($slot >= 1 && $slot <= 6) {
+            $updated = $productModel->quickRestock($slot, $addQty);
+            $logModel->addLog('quick_restock', null, DEFAULT_MACHINE_ID, "Quick added +{$addQty} units to slot #{$slot}.");
+            echo json_encode(['success' => $updated, 'message' => "Slot #{$slot} replenished with +{$addQty} units"]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Invalid slot number']);
+        }
+        exit;
+    }
+    if ($_POST['action'] === 'restock_all_max') {
+        $updated = $productModel->restockAllToMax();
+        $logModel->addLog('restock_all', null, DEFAULT_MACHINE_ID, "Admin triggered full machine restock to maximum capacity on all slots.");
+        echo json_encode(['success' => $updated, 'message' => "All slots replenished to maximum capacity!"]);
+        exit;
+    }
     if ($_POST['action'] === 'issue_refund') {
         $txnKey = trim($_POST['transaction_key'] ?? '');
         if (!empty($txnKey)) {
@@ -372,6 +390,42 @@ $estimatedRevenue = 0;
 foreach ($products as $p) {
     $estimatedRevenue += ($p['dispensed_count'] * $p['price']);
 }
+$salesTrend = $txnModel->getDailySalesTrend(7);
+$categorySales = $txnModel->getCategoryBreakdown();
+
+// Build continuous 7-day timeline arrays
+$trendLabels = [];
+$trendOrders = [];
+$trendRevenue = [];
+$trendMap = [];
+foreach ($salesTrend as $row) {
+    $trendMap[$row['sale_date']] = $row;
+}
+for ($i = 6; $i >= 0; $i--) {
+    $d = date('Y-m-d', strtotime("-$i days"));
+    $label = date('M d', strtotime("-$i days"));
+    $trendLabels[] = $label;
+    if (isset($trendMap[$d])) {
+        $trendOrders[] = (int)$trendMap[$d]['orders_count'];
+        $trendRevenue[] = (float)$trendMap[$d]['total_revenue'];
+    } else {
+        $trendOrders[] = 0;
+        $trendRevenue[] = 0.0;
+    }
+}
+
+// Category breakdown data
+$catLabels = [];
+$catCounts = [];
+$catColors = ['#f39c12', '#2ecc71', '#74b9ff', '#d63031', '#9b59b6', '#1abc9c'];
+foreach ($categorySales as $c) {
+    $catLabels[] = $c['category'];
+    $catCounts[] = (int)$c['order_count'];
+}
+if (empty($catLabels)) {
+    $catLabels = ['Paper (Long)', 'Paper (A4)', 'Paper (Short)', 'Pens & Supplies'];
+    $catCounts = [0, 0, 0, 0];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -386,6 +440,8 @@ foreach ($products as $p) {
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Business Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --retro-bg: #151821;
@@ -520,7 +576,8 @@ foreach ($products as $p) {
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .retro-link-btn {
@@ -530,7 +587,7 @@ foreach ($products as $p) {
             color: var(--retro-cream);
             padding: 6px 12px;
             border-radius: 8px;
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-weight: 700;
             text-decoration: none;
             display: flex;
@@ -542,6 +599,57 @@ foreach ($products as $p) {
         .retro-link-btn:active {
             transform: translateY(2px);
             box-shadow: 0 1px 0 #12151b;
+        }
+
+        .retro-link-btn.active {
+            background: var(--retro-mustard);
+            color: #12151b;
+            border-color: #ffffff;
+            box-shadow: 0 3px 0 #b3740e;
+        }
+
+        .retro-btn-quick {
+            background: #181d28;
+            border: 1px solid #3d4a65;
+            color: var(--retro-cream);
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .retro-btn-quick:hover {
+            background: #283348;
+            border-color: var(--retro-mustard);
+            color: #ffeaa7;
+        }
+
+        .retro-btn-quick:active {
+            transform: scale(0.96);
+        }
+
+        .btn-restock-all {
+            background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            box-shadow: 0 3px 0 #1b663e;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.12s;
+        }
+
+        .btn-restock-all:active {
+            transform: translateY(2px);
+            box-shadow: none;
         }
 
         /* Dashboard Container */
@@ -787,6 +895,24 @@ foreach ($products as $p) {
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-box-canvas {
+            position: relative;
+            height: 220px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 480px) {
             .metrics-deck { grid-template-columns: 1fr 1fr; gap: 10px; }
             .metric-card { padding: 12px; gap: 10px; }
@@ -812,21 +938,29 @@ foreach ($products as $p) {
             </a>
 
             <div class="nav-actions">
-                <span class="slot-tag" style="color: #4ade80; border-color: rgba(74, 222, 128, 0.3);">
-                    <i data-lucide="user-check" style="width: 12px; height: 12px; display: inline;"></i>
-                    <?= htmlspecialchars($_SESSION['penpoint_admin']['username'] ?? 'admin') ?>
-                </span>
-                <a href="../public/index.php" class="retro-link-btn" target="_blank">
-                    <i data-lucide="external-link" style="width: 14px; height: 14px; color: #74b9ff;"></i>
-                    <span>Student Kiosk</span>
+                <a href="index.php" class="retro-link-btn active">
+                    <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+                    <span>Slots Matrix</span>
+                </a>
+                <a href="transaction_logs.php" class="retro-link-btn">
+                    <i data-lucide="receipt" style="width: 14px; height: 14px; color: #74b9ff;"></i>
+                    <span>Dispense Logs</span>
                 </a>
                 <a href="analytics.php" class="retro-link-btn">
                     <i data-lucide="bar-chart-2" style="width: 14px; height: 14px; color: var(--retro-mustard);"></i>
                     <span>Analytics</span>
                 </a>
+                <a href="activity_logs.php" class="retro-link-btn">
+                    <i data-lucide="activity" style="width: 14px; height: 14px; color: #2ecc71;"></i>
+                    <span>Sensors & Audit</span>
+                </a>
+                <a href="../public/index.php" class="retro-link-btn" target="_blank" title="View Public Student Kiosk">
+                    <i data-lucide="external-link" style="width: 14px; height: 14px; color: #ffeaa7;"></i>
+                    <span>Kiosk</span>
+                </a>
                 <a href="index.php?logout=1" class="retro-link-btn" style="color: #ff7675; border-color: rgba(214, 48, 49, 0.4);">
                     <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
-                    <span>Lock / Logout</span>
+                    <span>Logout</span>
                 </a>
             </div>
         </div>
@@ -877,6 +1011,35 @@ foreach ($products as $p) {
             </div>
         </div>
 
+        <!-- Visual Analytics Overview Deck (Chart.js) -->
+        <div class="charts-row">
+            <div class="retro-panel-card">
+                <div class="panel-header-strip">
+                    <div class="panel-heading">
+                        <i data-lucide="trending-up" style="color: #74b9ff; width: 18px; height: 18px;"></i>
+                        7-Day Dispense & Revenue Activity
+                    </div>
+                    <span style="font-family: var(--font-mono); font-size: 0.68rem; color: #ffeaa7; background: #181d27; padding: 2px 8px; border-radius: 4px; border: 1px solid #333a4c;">DAILY VOLUME</span>
+                </div>
+                <div class="chart-box-canvas">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="retro-panel-card">
+                <div class="panel-header-strip">
+                    <div class="panel-heading">
+                        <i data-lucide="pie-chart" style="color: #2ecc71; width: 18px; height: 18px;"></i>
+                        Category Share
+                    </div>
+                    <span style="font-family: var(--font-mono); font-size: 0.68rem; color: #2ecc71; background: #181d27; padding: 2px 8px; border-radius: 4px; border: 1px solid #333a4c;">BY DISPENSE</span>
+                </div>
+                <div class="chart-box-canvas" style="display: flex; align-items: center; justify-content: center;">
+                    <canvas id="categoryDonutChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Content Split -->
         <div class="content-split">
             
@@ -889,9 +1052,12 @@ foreach ($products as $p) {
                             <i data-lucide="server" style="color: var(--retro-mustard); width: 18px; height: 18px;"></i>
                             Vending Slot Inventory Matrix (Unit: <?= DEFAULT_MACHINE_ID ?>)
                         </div>
-                        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--retro-cream-muted);">
-                            6 SLOTS ACTIVE • 4 TIERS
-                        </span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" class="btn-restock-all" onclick="restockAllMax()">
+                                <i data-lucide="package-plus" style="width: 14px; height: 14px;"></i>
+                                Restock All to Max Capacity
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -899,12 +1065,12 @@ foreach ($products as $p) {
                             <thead>
                                 <tr>
                                     <th>Slot / Tier</th>
-                                    <th>Item & Actuation Type</th>
+                                    <th>Item</th>
                                     <th>Price</th>
-                                    <th>Stock</th>
+                                    <th>Stock Level</th>
                                     <th>Status</th>
                                     <th>Dispensed</th>
-                                    <th>Action</th>
+                                    <th>Quick Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -913,8 +1079,6 @@ foreach ($products as $p) {
                                         $isOut = $p['stock'] <= 0;
                                         $isLow = $p['stock'] <= $p['low_stock_threshold'] && !$isOut;
                                         $tierNum = $p['tier_number'] ?? ($p['slot_number'] <= 3 ? $p['slot_number'] : 4);
-                                        $mech = $p['mechanism_type'] ?? ($p['slot_number'] <= 3 ? 'roller_feed' : 'paddle_push');
-                                        $isRoller = ($mech === 'roller_feed');
                                     ?>
                                     <tr>
                                         <td>
@@ -923,11 +1087,8 @@ foreach ($products as $p) {
                                         </td>
                                         <td>
                                             <div style="font-weight: 800; color: var(--retro-cream);"><?= htmlspecialchars($p['name']) ?></div>
-                                            <div style="font-size: 0.72rem; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-                                                <span style="color: var(--retro-cream-muted);"><?= htmlspecialchars($p['category']) ?></span>
-                                                <span style="font-family: var(--font-mono); font-size: 0.65rem; padding: 1px 5px; border-radius: 4px; background: <?= $isRoller ? 'rgba(9, 132, 227, 0.2)' : 'rgba(230, 126, 34, 0.2)' ?>; color: <?= $isRoller ? '#74b9ff' : '#f39c12' ?>;">
-                                                    <?= $isRoller ? 'DC Rubber Roller' : 'Servo Paddle Push' ?>
-                                                </span>
+                                            <div style="font-size: 0.72rem; color: var(--retro-cream-muted); margin-top: 2px;">
+                                                <?= htmlspecialchars($p['category']) ?>
                                             </div>
                                         </td>
                                         <td style="font-weight: 800; font-family: var(--font-mono); color: #ffeaa7;">
@@ -949,10 +1110,18 @@ foreach ($products as $p) {
                                             <?= $p['dispensed_count'] ?>
                                         </td>
                                         <td>
-                                            <button class="btn-restock-action" onclick="openRestockModal(<?= $p['slot_number'] ?>, '<?= htmlspecialchars(addslashes($p['name'])) ?>', <?= $p['stock'] ?>)">
-                                                <i data-lucide="plus" style="width: 13px; height: 13px; color: var(--retro-mustard);"></i>
-                                                Restock
-                                            </button>
+                                            <div style="display: flex; align-items: center; gap: 5px;">
+                                                <button class="retro-btn-quick" onclick="quickAddStock(<?= $p['slot_number'] ?>, 5)" title="Add +5 units to this slot">
+                                                    +5
+                                                </button>
+                                                <button class="retro-btn-quick" onclick="quickAddStock(<?= $p['slot_number'] ?>, <?= ($p['max_capacity'] - $p['stock']) ?>)" title="Fill to maximum capacity">
+                                                    Max
+                                                </button>
+                                                <button class="btn-restock-action" onclick="openRestockModal(<?= $p['slot_number'] ?>, '<?= htmlspecialchars(addslashes($p['name'])) ?>', <?= $p['stock'] ?>)">
+                                                    <i data-lucide="edit-3" style="width: 12px; height: 12px; color: var(--retro-mustard);"></i>
+                                                    Set
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -1196,6 +1365,47 @@ foreach ($products as $p) {
             }
         }
 
+        async function quickAddStock(slot, qty) {
+            qty = parseInt(qty, 10);
+            if (isNaN(qty) || qty <= 0) return;
+            const formData = new FormData();
+            formData.append('action', 'quick_restock');
+            formData.append('slot_number', slot);
+            formData.append('add_qty', qty);
+
+            try {
+                const res = await fetch('index.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Quick restock failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error during quick restock.');
+            }
+        }
+
+        async function restockAllMax() {
+            if (!confirm('Refill ALL machine slots to their maximum capacity?')) return;
+            const formData = new FormData();
+            formData.append('action', 'restock_all_max');
+
+            try {
+                const res = await fetch('index.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Restock all failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error during restock all.');
+            }
+        }
+
         async function issueRefund(txnKey) {
             if (!confirm(`Are you sure you want to approve and issue refund for transaction ${txnKey}?`)) return;
 
@@ -1212,6 +1422,144 @@ foreach ($products as $p) {
                 alert('Refund failed: ' + data.error);
             }
         }
+
+        // Initialize Chart.js with Showa/Heisei Retro Palette
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Chart !== 'undefined') {
+                Chart.defaults.color = '#e6dfcf';
+                Chart.defaults.font.family = "'Zen Maru Gothic', 'Noto Sans JP', sans-serif";
+
+                const ctxTrend = document.getElementById('salesTrendChart')?.getContext('2d');
+                if (ctxTrend) {
+                    new Chart(ctxTrend, {
+                        type: 'line',
+                        data: {
+                            labels: <?= json_encode($trendLabels) ?>,
+                            datasets: [
+                                {
+                                    label: 'Dispense Units',
+                                    data: <?= json_encode($trendOrders) ?>,
+                                    borderColor: '#74b9ff',
+                                    backgroundColor: 'rgba(116, 185, 255, 0.12)',
+                                    tension: 0.35,
+                                    fill: true,
+                                    pointBackgroundColor: '#74b9ff',
+                                    pointBorderColor: '#ffffff',
+                                    pointRadius: 4,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Revenue (<?= CURRENCY_SYMBOL ?>)',
+                                    data: <?= json_encode($trendRevenue) ?>,
+                                    borderColor: '#ffeaa7',
+                                    backgroundColor: 'transparent',
+                                    borderDash: [4, 4],
+                                    tension: 0.35,
+                                    pointBackgroundColor: '#ffeaa7',
+                                    pointBorderColor: '#ffffff',
+                                    pointRadius: 3,
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        color: '#fbf7ee',
+                                        font: { size: 11, weight: '700' },
+                                        boxWidth: 12,
+                                        padding: 10
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: '#181d27',
+                                    borderColor: '#3d465c',
+                                    borderWidth: 1,
+                                    titleColor: '#ffeaa7',
+                                    bodyColor: '#fbf7ee',
+                                    padding: 10,
+                                    cornerRadius: 8
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                    ticks: { color: '#a0a8b9', font: { size: 10, family: "'DM Mono', monospace" } }
+                                },
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                    ticks: { 
+                                        stepSize: 1,
+                                        color: '#74b9ff', 
+                                        font: { size: 10, family: "'DM Mono', monospace" } 
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { 
+                                        color: '#ffeaa7', 
+                                        font: { size: 10, family: "'DM Mono', monospace" },
+                                        callback: function(value) { return '<?= CURRENCY_SYMBOL ?>' + value; }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const ctxCat = document.getElementById('categoryDonutChart')?.getContext('2d');
+                if (ctxCat) {
+                    new Chart(ctxCat, {
+                        type: 'doughnut',
+                        data: {
+                            labels: <?= json_encode($catLabels) ?>,
+                            datasets: [{
+                                data: <?= json_encode($catCounts) ?>,
+                                backgroundColor: <?= json_encode($catColors) ?>,
+                                borderColor: '#212634',
+                                borderWidth: 2,
+                                hoverOffset: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        color: '#fbf7ee',
+                                        font: { size: 10, weight: '600' },
+                                        boxWidth: 10,
+                                        padding: 8
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: '#181d27',
+                                    borderColor: '#3d465c',
+                                    borderWidth: 1,
+                                    titleColor: '#ffeaa7',
+                                    bodyColor: '#fbf7ee',
+                                    padding: 10,
+                                    cornerRadius: 8
+                                }
+                            },
+                            cutout: '62%'
+                        }
+                    });
+                }
+            }
+        });
     </script>
 </body>
 </html>

@@ -70,6 +70,22 @@ class ProductModel {
         return $success;
     }
 
+    public function quickRestock($slot, $addQty) {
+        if (!$this->conn) return true;
+        $stmt = $this->conn->prepare("UPDATE products SET stock = LEAST(max_capacity, stock + ?) WHERE slot_number = ?");
+        if (!$stmt) return false;
+        $stmt->bind_param("ii", $addQty, $slot);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function restockAllToMax() {
+        if (!$this->conn) return true;
+        $success = $this->conn->query("UPDATE products SET stock = max_capacity");
+        return (bool)$success;
+    }
+
     public function decrementStock($slot, $qty = 1) {
         $qty = max(1, intval($qty));
         if (!$this->conn) return true;
