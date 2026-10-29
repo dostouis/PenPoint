@@ -1370,9 +1370,44 @@ foreach ($products as $p) {
 
         .receipt-header-row {
             border-bottom: 1px dashed #7f8c8d;
-            padding-bottom: 6px;
+            padding-bottom: 8px;
             margin-bottom: 8px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .receipt-brand-stamp {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--retro-red), var(--retro-red-deep));
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2px;
+        }
+
+        .receipt-brand-stamp .sign-kanji {
+            font-family: 'Dela Gothic One', sans-serif;
+            font-size: 0.8rem;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .receipt-brand-stamp .sign-sub-tag {
+            font-size: 0.45rem;
+            font-family: var(--font-mono);
+            letter-spacing: 0.08em;
+            color: #ffcccc;
+            margin-top: 1px;
+            text-transform: uppercase;
         }
 
         .receipt-title {
@@ -1380,6 +1415,7 @@ foreach ($products as $p) {
             font-size: 0.95rem;
             color: var(--retro-red-deep);
             letter-spacing: 0.05em;
+            line-height: 1.1;
         }
 
         .receipt-line {
@@ -1985,7 +2021,11 @@ foreach ($products as $p) {
         <!-- Animated Paper e-Receipt Printout -->
         <div class="retro-receipt-ticket" id="receiptPrintout" style="display: none;">
             <div class="receipt-header-row">
-                <div class="receipt-title">★ PENPOINT e-RECEIPT ★</div>
+                <div class="receipt-brand-stamp">
+                    <span class="sign-kanji">文具</span>
+                    <span class="sign-sub-tag">PEN</span>
+                </div>
+                <div class="receipt-title">PENPOINT e-RECEIPT</div>
                 <div style="font-size: 0.65rem; color: #636e72;">UNIVERSITY OF MAKATI • KIOSK #01</div>
             </div>
             <div class="receipt-line">
