@@ -1491,20 +1491,68 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         ------------------------------------------------------------- */
         @media (max-width: 480px) {
             header {
-                padding: 10px 14px;
+                padding: 8px 10px;
+            }
+
+            .header-inner {
+                gap: 8px;
+            }
+
+            .retro-brand {
+                gap: 8px;
+                min-width: 0;
+                flex-shrink: 1;
             }
 
             .retro-stationery-sign {
-                width: 38px;
-                height: 38px;
+                width: 36px;
+                height: 36px;
             }
 
             .sign-kanji {
-                font-size: 0.85rem;
+                font-size: 0.82rem;
             }
 
             .brand-main-title {
-                font-size: 1.15rem;
+                font-size: 1.05rem;
+                gap: 6px;
+                white-space: nowrap;
+            }
+
+            .brand-jp-badge {
+                font-size: 0.58rem;
+                padding: 2px 6px;
+            }
+
+            .brand-sub-strip {
+                font-size: 0.58rem;
+                letter-spacing: 0.04em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .header-actions {
+                gap: 6px;
+                flex-shrink: 0;
+            }
+
+            .retro-audio-toggle {
+                padding: 5px 8px;
+                font-size: 0.65rem;
+                gap: 4px;
+            }
+
+            .machine-lamp {
+                padding: 4px 8px;
+                font-size: 0.65rem;
+                gap: 5px;
+            }
+
+            .retro-ticker-strip {
+                padding: 5px 10px;
+                font-size: 0.64rem;
+                gap: 8px;
             }
 
             .pass-ticket-btn span {

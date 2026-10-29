@@ -967,10 +967,18 @@ if (empty($catLabels)) {
         }
 
         @media (max-width: 480px) {
+            header { padding: 8px 10px; }
+            .header-inner { gap: 8px; }
+            .brand-cluster { gap: 8px; min-width: 0; }
+            .retro-stationery-sign { width: 36px; height: 36px; }
+            .brand-text h1 { font-size: 1.05rem; gap: 6px; white-space: nowrap; }
+            .brand-jp-badge { font-size: 0.58rem; padding: 2px 6px; }
+            .nav-actions { gap: 6px; }
             .metrics-deck { grid-template-columns: 1fr 1fr; gap: 10px; }
             .metric-card { padding: 12px; gap: 10px; }
             .metric-val { font-size: 1.25rem; }
             .metric-caption { font-size: 0.65rem; }
+            .retro-link-btn { padding: 6px 9px; }
             .retro-link-btn span { display: none; }
         }
     </style>
