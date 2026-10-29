@@ -381,7 +381,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 $products = $productModel->getAllProducts();
 $machines = $machineModel->getAllMachines();
-$recentLogs = $logModel->getLogs(15);
+$recentLogs = $logModel->getLogs(30);
 $pendingRefunds = $txnModel->getPendingRefunds();
 
 // Fetch Machine Sensors
@@ -751,6 +751,7 @@ if (empty($catLabels)) {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            align-items: stretch;
         }
 
         @media (max-width: 992px) {
@@ -758,7 +759,10 @@ if (empty($catLabels)) {
         }
 
         .telemetry-feed-scroll {
-            max-height: 380px;
+            flex: 1;
+            height: 100%;
+            min-height: 380px;
+            max-height: 485px;
             overflow-y: auto;
             padding-right: 6px;
         }
