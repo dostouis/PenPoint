@@ -527,7 +527,7 @@ if ($logsRes) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">SYS</span>
+                    <span class="sign-kanji">監査</span>
                     <span class="sign-sub-tag">AUDIT</span>
                 </div>
                 <div class="brand-text">

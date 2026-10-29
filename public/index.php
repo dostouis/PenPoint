@@ -1635,7 +1635,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
         <div class="header-inner">
             <a href="index.php" class="retro-brand">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">VEND</span>
+                    <span class="sign-kanji">文具</span>
                     <span class="sign-sub-tag">PEN</span>
                 </div>
                 <div class="brand-titles">

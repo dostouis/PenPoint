@@ -539,8 +539,8 @@ if ($listRes) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">TXN</span>
-                    <span class="sign-sub-tag">LOGS</span>
+                    <span class="sign-kanji">出庫</span>
+                    <span class="sign-sub-tag">LOG</span>
                 </div>
                 <div class="brand-text">
                     <h1><?= APP_NAME ?> <span class="brand-jp-badge">DISPENSE LOGS</span></h1>

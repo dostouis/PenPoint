@@ -949,7 +949,7 @@ if (empty($catLabels)) {
         <div class="header-inner">
             <a href="index.php" class="brand-cluster">
                 <div class="retro-stationery-sign">
-                    <span class="sign-kanji" style="font-size: 0.72rem; letter-spacing: 0.05em;">ADM</span>
+                    <span class="sign-kanji">保全</span>
                     <span class="sign-sub-tag">HUB</span>
                 </div>
                 <div class="brand-text">
