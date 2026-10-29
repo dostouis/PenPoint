@@ -721,7 +721,7 @@ foreach ($products as $p) {
         /* Display Window with Genuine Product Photo */
         .showcase-window {
             height: 180px;
-            background: radial-gradient(circle at center, #ffffff 15%, #ede7db 100%);
+            background: radial-gradient(circle at center, #ffffff 20%, #ede8dc 85%, #dfd7c5 100%);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -729,18 +729,18 @@ foreach ($products as $p) {
             justify-content: center;
             padding: 12px;
             border-bottom: 2px solid #161a24;
-            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.22), inset 0 -3px 8px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
         }
 
         /* Glass reflection stripe */
         .showcase-window::after {
             content: "";
             position: absolute;
-            top: -40px;
-            right: -30px;
-            width: 90px;
-            height: 260px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, transparent 60%);
+            top: -50px;
+            right: -35px;
+            width: 100px;
+            height: 280px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
             transform: rotate(25deg);
             pointer-events: none;
         }
@@ -749,13 +749,14 @@ foreach ($products as $p) {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 8px 12px rgba(45, 52, 54, 0.3));
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            filter: drop-shadow(0 10px 14px rgba(45, 52, 54, 0.35));
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
             z-index: 2;
         }
 
         .vending-slot-card:hover .stationery-photo {
-            transform: scale(1.06);
+            transform: scale(1.07);
+            filter: drop-shadow(0 14px 18px rgba(45, 52, 54, 0.45));
         }
 
         /* Item Info Section */
@@ -872,12 +873,12 @@ foreach ($products as $p) {
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
 
-        /* Tactile Push Button */
+        /* Tactile Illuminated Push Button */
         .btn-retro-push {
-            background: linear-gradient(180deg, #ff4757 0%, var(--retro-red) 100%);
+            background: linear-gradient(180deg, #ff4d5a 0%, var(--retro-red) 70%, var(--retro-red-deep) 100%);
             border: 2px solid #ffffff;
             color: #ffffff;
-            box-shadow: 0 4px 0 #7e0c0d, 0 6px 12px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 0 #7e0c0d, 0 6px 14px rgba(214, 48, 49, 0.45);
             border-radius: var(--radius-btn);
             padding: 8px 16px;
             font-family: 'Dela Gothic One', sans-serif;
@@ -886,17 +887,22 @@ foreach ($products as $p) {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.1s ease;
+            transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
             letter-spacing: 0.04em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            position: relative;
         }
 
         .btn-retro-push:hover {
-            filter: brightness(1.08);
+            filter: brightness(1.1);
+            box-shadow: 0 5px 0 #7e0c0d, 0 8px 20px rgba(214, 48, 49, 0.65);
+            transform: translateY(-1px);
         }
 
         .btn-retro-push:active {
             transform: translateY(3px);
-            box-shadow: 0 1px 0 #7e0c0d;
+            box-shadow: 0 1px 0 #7e0c0d, 0 2px 6px rgba(214, 48, 49, 0.4);
+            filter: brightness(0.95);
         }
 
         .btn-retro-push.disabled {
