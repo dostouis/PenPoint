@@ -149,6 +149,17 @@ if (empty($catLabels)) {
                 radial-gradient(circle at 10% 100%, #1c212c 0%, transparent 40%);
         }
 
+        /* Subtle retro halftone print texture overlay */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+            background-size: 8px 8px;
+            pointer-events: none;
+            z-index: 998;
+        }
+
         /* Top Navigation Header */
         header {
             background: #1b202c;
