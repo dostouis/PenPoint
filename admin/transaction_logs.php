@@ -151,6 +151,10 @@ if ($listRes) {
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Flatpickr Datepicker & Custom Retro Theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="../public/css/retro-calendar.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         :root {
             --retro-bg: #151821;
@@ -650,8 +654,14 @@ if ($listRes) {
                     <?php endfor; ?>
                 </select>
 
-                <input type="date" name="date_from" class="filter-input" value="<?= htmlspecialchars($date_from) ?>" title="From Date">
-                <input type="date" name="date_to" class="filter-input" value="<?= htmlspecialchars($date_to) ?>" title="To Date">
+                <div class="date-input-wrap">
+                    <i data-lucide="calendar" class="date-input-icon"></i>
+                    <input type="text" name="date_from" id="date_from" class="filter-input retro-datepicker" placeholder="From Date" value="<?= htmlspecialchars($date_from) ?>" autocomplete="off">
+                </div>
+                <div class="date-input-wrap">
+                    <i data-lucide="calendar" class="date-input-icon"></i>
+                    <input type="text" name="date_to" id="date_to" class="filter-input retro-datepicker" placeholder="To Date" value="<?= htmlspecialchars($date_to) ?>" autocomplete="off">
+                </div>
 
                 <button type="submit" class="btn-filter">
                     <i data-lucide="filter" style="width: 13px; height: 13px;"></i> Filter
@@ -778,6 +788,14 @@ if ($listRes) {
 
     <script>
         lucide.createIcons();
+
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr(".retro-datepicker", {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                disableMobile: true
+            });
+        }
 
         async function issueRefund(txnKey) {
             if (!confirm(`Are you sure you want to approve and issue refund for transaction ${txnKey}?`)) return;

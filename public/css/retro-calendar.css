@@ -1,0 +1,207 @@
+/* ==========================================================================
+   PenPoint Showa/Heisei Retro Flatpickr Calendar Theme (保全カレンダー)
+   Palette: Dark Chassis #1e2432, Mustard Gold #ffeaa7, Matcha Green #2ecc71, Shrine Red #d63031
+   ========================================================================== */
+
+.date-input-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.date-input-icon {
+    position: absolute;
+    left: 10px;
+    width: 14px;
+    height: 14px;
+    color: #f39c12;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.filter-input.retro-datepicker {
+    padding-left: 32px !important;
+    cursor: pointer;
+    width: 145px;
+    background: #212634;
+    border: 1px solid #3a445b;
+    border-radius: 6px;
+    color: #ffeaa7;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    transition: all 0.15s ease;
+}
+
+.filter-input.retro-datepicker:focus,
+.filter-input.retro-datepicker.active {
+    border-color: #ffeaa7;
+    box-shadow: 0 0 0 2px rgba(255, 234, 167, 0.2);
+    outline: none;
+}
+
+/* Flatpickr Base Chassis */
+.flatpickr-calendar {
+    background: #1e2432 !important;
+    border: 2px solid #3d475c !important;
+    border-radius: 14px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 4px 0 #10131a !important;
+    font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif !important;
+    color: #fbf7ee !important;
+    width: 308px !important;
+    padding: 10px !important;
+    user-select: none;
+}
+
+.flatpickr-calendar.arrowTop:before,
+.flatpickr-calendar.arrowTop:after {
+    border-bottom-color: #3d475c !important;
+}
+
+.flatpickr-calendar.arrowBottom:before,
+.flatpickr-calendar.arrowBottom:after {
+    border-top-color: #3d475c !important;
+}
+
+/* Header Month & Year */
+.flatpickr-months {
+    border-bottom: 2px dashed #2f3749 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 8px !important;
+    align-items: center !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    color: #ffeaa7 !important;
+    fill: #ffeaa7 !important;
+    font-family: 'Zen Maru Gothic', sans-serif !important;
+    height: 38px !important;
+}
+
+.flatpickr-current-month {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: #ffeaa7 !important;
+    padding: 4px 0 0 !important;
+}
+
+.flatpickr-current-month .cur-month {
+    font-family: 'Zen Maru Gothic', sans-serif !important;
+    font-weight: 900 !important;
+    color: #fbf7ee !important;
+    margin-right: 4px !important;
+}
+
+.flatpickr-current-month input.cur-year {
+    font-family: 'DM Mono', monospace !important;
+    font-weight: 800 !important;
+    color: #ffeaa7 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: #ffeaa7 !important;
+    fill: #ffeaa7 !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease !important;
+    height: 32px !important;
+    width: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+    background: #2a3346 !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Weekday Row */
+span.flatpickr-weekday {
+    color: #8b96ad !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+}
+
+/* Day Numbers */
+.flatpickr-days {
+    width: 100% !important;
+}
+
+.dayContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    justify-content: space-around !important;
+}
+
+.flatpickr-day {
+    color: #fbf7ee !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    border: 1px solid transparent !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    max-width: 38px !important;
+    margin: 2px !important;
+    transition: all 0.12s ease !important;
+}
+
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: rgba(230, 223, 207, 0.22) !important;
+}
+
+.flatpickr-day:hover {
+    background: #2b3447 !important;
+    border-color: #ffeaa7 !important;
+    color: #ffeaa7 !important;
+}
+
+.flatpickr-day.today {
+    border: 1px solid #d63031 !important;
+    color: #ffeaa7 !important;
+    position: relative;
+    background: rgba(214, 48, 49, 0.08) !important;
+}
+
+.flatpickr-day.today:after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #d63031;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #ffeaa7 !important;
+    color: #12151b !important;
+    font-weight: 900 !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 2px 0 #b39b56 !important;
+}
+
+.flatpickr-day.inRange {
+    background: rgba(255, 234, 167, 0.18) !important;
+    border-color: rgba(255, 234, 167, 0.35) !important;
+    color: #ffeaa7 !important;
+}
