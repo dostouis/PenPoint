@@ -337,19 +337,21 @@ $btnCopyUrl.Add_Click({
 })
 
 $btnOpenPublicKiosk.Add_Click({
-    if ($script:rawBaseUrl.StartsWith("https")) {
-        [System.Diagnostics.Process]::Start("$script:rawBaseUrl/public/index.php")
-    } elseif ($txtUrl.Text.StartsWith("https")) {
+    $base = $script:rawBaseUrl.Trim().TrimEnd('/')
+    if ($base -like "https://*") {
+        [System.Diagnostics.Process]::Start("$base/public/index.php")
+    } elseif ($txtUrl.Text -like "https://*") {
         [System.Diagnostics.Process]::Start($txtUrl.Text)
     }
 })
 
 $btnOpenPublicAdmin.Add_Click({
-    if ($script:rawBaseUrl.StartsWith("https")) {
-        [System.Diagnostics.Process]::Start("$script:rawBaseUrl/admin/index.php")
-    } elseif ($txtUrl.Text.StartsWith("https")) {
-        $base = $txtUrl.Text -replace "/public/index\.php", ""
+    $base = $script:rawBaseUrl.Trim().TrimEnd('/')
+    if ($base -like "https://*") {
         [System.Diagnostics.Process]::Start("$base/admin/index.php")
+    } elseif ($txtUrl.Text -like "https://*") {
+        $extractedBase = ($txtUrl.Text -replace "/public.*", "").Trim().TrimEnd('/')
+        [System.Diagnostics.Process]::Start("$extractedBase/admin/index.php")
     }
 })
 
