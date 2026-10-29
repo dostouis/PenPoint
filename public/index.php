@@ -1693,7 +1693,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                     <span class="retro-chip-indicator"></span> All Items (6)
                 </button>
                 <button class="retro-chip" onclick="filterCategory('Paper', this)">
-                    <span class="retro-chip-indicator"></span> Roller Paper Trays (3)
+                    <span class="retro-chip-indicator"></span> Paper Supplies (3)
                 </button>
                 <button class="retro-chip" onclick="filterCategory('Pens', this)">
                     <span class="retro-chip-indicator"></span> Pens & Inks
@@ -1741,9 +1741,9 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
                             <span class="slot-num-badge">SLOT <?= $p['slot_number'] ?></span>
                             <span>TIER <?= $tierNum ?></span>
                         </div>
-                        <div class="slot-badge-ribbon" style="background: <?= $isRoller ? 'rgba(9, 132, 227, 0.2)' : 'rgba(230, 126, 34, 0.2)' ?>; border-color: <?= $isRoller ? '#74b9ff' : '#f39c12' ?>; color: <?= $isRoller ? '#74b9ff' : '#f39c12' ?>;">
-                            <i data-lucide="<?= $isRoller ? 'scroll' : 'cog' ?>" style="width: 11px; height: 11px; display: inline; vertical-align: middle;"></i>
-                            <?= $isRoller ? 'DC Roller' : 'Paddle Servo' ?>
+                        <div class="slot-badge-ribbon" style="background: rgba(46, 204, 113, 0.15); border-color: #2ecc71; color: #2ecc71;">
+                            <i data-lucide="check-circle" style="width: 11px; height: 11px; display: inline; vertical-align: middle;"></i>
+                            Ready
                         </div>
                     </div>
 
@@ -2146,9 +2146,7 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             selectedQuantity = 1;
             const slotStr = String(product.slot_number).padStart(2, '0');
             const tierStr = product.tier_number || (product.slot_number <= 3 ? product.slot_number : 4);
-            const mechLabel = (product.mechanism_type === 'roller_feed' || product.slot_number <= 3) ? 'DC ROLLER' : 'SERVO PADDLE';
-
-            document.getElementById('modalSlot').innerText = `SLOT ${slotStr} • TIER ${tierStr} (${mechLabel})`;
+            document.getElementById('modalSlot').innerText = `SLOT ${slotStr} • TIER ${tierStr}`;
             document.getElementById('modalItemName').innerText = product.name;
             
             // Populate Academic Guide details
@@ -2250,13 +2248,9 @@ $machine_id = $_GET['machine'] ?? DEFAULT_MACHINE_ID;
             receiptBox.style.display = 'none';
 
             activeSlotNum.innerText = slotStr;
-            title.innerText = isRoller ? `Feeding ${qty} Paper Sheet(s)...` : `Actuating Servo Paddle (${qty}x)...`;
+            title.innerText = `Dispensing ${qty}x ${currentProduct.name}...`;
             
-            const motorActionText = isRoller 
-                ? `Actuating DC Gear Rubber Roller on Tier ${tierNum} for ${qty} cycle(s)...`
-                : `Sweeping metal-gear servo paddle crank on Tier 4 for ${qty} unit(s)...`;
-
-            msg.innerHTML = `${motorActionText}<br><span style="color: #f39c12;">Awaiting Tier ${tierNum} optical break-beam IR drop detection...</span>`;
+            msg.innerHTML = `Dispensing supply from Slot #${slotStr}...<br><span style="color: #f39c12;">Awaiting optical drop verification...</span>`;
             actionBtn.style.display = "none";
             overlay.classList.add('active');
             lucide.createIcons();
