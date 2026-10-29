@@ -1,843 +1,784 @@
 <?php
 // admin/activity_logs.php
-// Activity Logs Page
+// PenPoint Machine Sensor Telemetry & Audit Logs
+// Theme: Japanese Retro Vending Maintenance & Telemetry Console (管理者・保全管理コンソール)
+// English-First with Retro Kanji Accent Stamps
 
-require_once '../config/config.php';
-require_once '../config/database.php';
-require_once '../models/ActivityLogModel.php';
+date_default_timezone_set('Asia/Manila');
 
-$appName = defined('APP_NAME') ? APP_NAME : 'EcoPoints';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/ActivityLogModel.php';
 
+session_start();
+if (empty($_SESSION['penpoint_admin'])) {
+    header('Location: index.php');
+    exit;
+}
+
+$conn = getConnection();
 $logModel = new ActivityLogModel();
 
-// Get filter parameters
+// Fetch Machine Sensors Telemetry
+$sensorData = [
+    'tier_1_ir' => 'CLEAR',
+    'tier_2_ir' => 'CLEAR',
+    'tier_3_ir' => 'CLEAR',
+    'tier_4_ir' => 'CLEAR',
+    'door_switch' => 'CLOSED',
+    'last_ping' => date('Y-m-d H:i:s')
+];
+if ($conn) {
+    $resSensors = @$conn->query("SELECT * FROM machine_sensors WHERE machine_id = '" . DEFAULT_MACHINE_ID . "' LIMIT 1");
+    if ($resSensors && $rowS = $resSensors->fetch_assoc()) {
+        $sensorData = $rowS;
+    }
+}
+
+// Filters & Pagination
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$type = $_GET['type'] ?? '';
-$idcard = $_GET['idcard'] ?? '';
-$limit = 50;
+$search = trim($_GET['search'] ?? '');
+$type = trim($_GET['type'] ?? '');
+$date_from = trim($_GET['date_from'] ?? '');
+$date_to = trim($_GET['date_to'] ?? '');
+$limit = 30;
 $offset = ($page - 1) * $limit;
 
-// Get logs
-$logs = $logModel->getLogs($limit, $offset, $type ?: null, $idcard ?: null);
-$totalLogs = $logModel->getTotalCount($type ?: null, $idcard ?: null);
-$totalPages = ceil($totalLogs / $limit);
-
-// Get stats
-$stats = $logModel->getStats();
-$logTypes = $logModel->getLogTypes();
-
-// Get users for filter dropdown
-$conn = getConnection();
-$users = [];
-$userResult = $conn->query("SELECT DISTINCT idcard, fname, lname FROM users ORDER BY fname");
-while ($row = $userResult->fetch_assoc()) {
-    $users[] = $row;
+// Build WHERE query
+$whereClauses = [];
+if ($search !== '') {
+    $safeSearch = $conn->real_escape_string($search);
+    $whereClauses[] = "(details LIKE '%{$safeSearch}%' OR machine_id LIKE '%{$safeSearch}%' OR idcard LIKE '%{$safeSearch}%')";
 }
-$conn->close();
+if ($type !== '') {
+    $safeType = $conn->real_escape_string($type);
+    $whereClauses[] = "log_type = '{$safeType}'";
+}
+if ($date_from !== '') {
+    $safeFrom = $conn->real_escape_string($date_from);
+    $whereClauses[] = "DATE(created_at) >= '{$safeFrom}'";
+}
+if ($date_to !== '') {
+    $safeTo = $conn->real_escape_string($date_to);
+    $whereClauses[] = "DATE(created_at) <= '{$safeTo}'";
+}
 
-$logModel->close();
+$whereSQL = !empty($whereClauses) ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
+
+// CSV Export
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=penpoint_audit_logs_' . date('Ymd_His') . '.csv');
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['ID', 'Log Type', 'Machine ID', 'Actor / Operator', 'Details', 'IP Address', 'Date & Time']);
+
+    $expSQL = "SELECT * FROM activity_logs {$whereSQL} ORDER BY created_at DESC";
+    $expRes = $conn->query($expSQL);
+    if ($expRes) {
+        while ($r = $expRes->fetch_assoc()) {
+            fputcsv($output, [
+                $r['id'],
+                $r['log_type'],
+                $r['machine_id'] ?? DEFAULT_MACHINE_ID,
+                $r['idcard'] ?? 'SYSTEM',
+                $r['details'],
+                $r['ip_address'] ?? '127.0.0.1',
+                $r['created_at']
+            ]);
+        }
+    }
+    fclose($output);
+    exit;
+}
+
+// Get Distinct Log Types for dropdown
+$typeList = [];
+$tRes = $conn->query("SELECT DISTINCT log_type FROM activity_logs WHERE log_type IS NOT NULL AND log_type != '' ORDER BY log_type");
+if ($tRes) {
+    while ($tr = $tRes->fetch_assoc()) {
+        $typeList[] = $tr['log_type'];
+    }
+}
+
+// Count total
+$countSQL = "SELECT COUNT(*) as count FROM activity_logs {$whereSQL}";
+$countRes = $conn->query($countSQL);
+$totalRows = $countRes ? (int)$countRes->fetch_assoc()['count'] : 0;
+$totalPages = max(1, ceil($totalRows / $limit));
+
+// Fetch logs
+$logsSQL = "
+    SELECT * 
+    FROM activity_logs 
+    {$whereSQL} 
+    ORDER BY created_at DESC 
+    LIMIT {$limit} OFFSET {$offset}
+";
+$logsRes = $conn->query($logsSQL);
+$logs = [];
+if ($logsRes) {
+    while ($row = $logsRes->fetch_assoc()) {
+        $logs[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Logs - <?= htmlspecialchars($appName) ?> Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#181c24">
+    <title><?= APP_NAME ?> — Sensor Diagnostics & System Audit (機器・監査ログ)</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --bg: #071a0e;
-            --forest: #0d2b17;
-            --surface: rgba(10, 30, 17, 0.85);
-            --surface-solid: #0e2416;
-            --surface2: rgba(255,255,255,0.06);
-            --surface2-solid: #132d1c;
-            --green: #1e7a45;
-            --green-bright: #35e07a;
-            --green-mid: #28b85e;
-            --green-light: #a6f2c4;
-            --green-glow: rgba(53,224,122,0.18);
-            --accent: #f5c842;
-            --red: #e05a5a;
-            --blue: #5ab4ff;
-            --text: #eef8f2;
-            --muted: #6faa88;
-            --border: rgba(53,224,122,0.12);
-            --border-solid: #1c3d28;
+            --retro-bg: #151821;
+            --retro-chassis: #212634;
+            --retro-panel: #2a3142;
+            --retro-cream: #fbf7ee;
+            --retro-cream-muted: #e6dfcf;
+            --retro-red: #d63031;
+            --retro-red-deep: #b71516;
+            --retro-matcha: #2e7d32;
+            --retro-mustard: #f39c12;
+            --retro-border: #3d465c;
+            --font-display: 'Dela Gothic One', sans-serif;
+            --font-body: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+            --font-mono: 'DM Mono', monospace;
+            --radius-box: 14px;
+            --radius-btn: 10px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html { scrollbar-width: thin; scrollbar-color: #3d465c #151821; }
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #151821; border-left: 1px solid #232938; }
+        ::-webkit-scrollbar-thumb { background: #3a445b; border-radius: 9999px; }
+
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Nunito Sans', sans-serif;
+            font-family: var(--font-body);
+            background-color: var(--retro-bg);
+            color: var(--retro-cream);
             min-height: 100vh;
-            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #252c3c 0%, transparent 60%),
+                radial-gradient(circle at 10% 100%, #1c212c 0%, transparent 40%);
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 100% 70% at 50% 0%, rgba(14,50,28,0.95) 0%, transparent 70%),
-                radial-gradient(ellipse 60% 50% at 10% 50%, rgba(20,70,38,0.4) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 90% 60%, rgba(8,40,20,0.5) 0%, transparent 60%),
-                linear-gradient(180deg, #071a0e 0%, #0a2212 40%, #071a0e 100%);
-            pointer-events: none;
-            z-index: 0;
+        /* Top Navigation Header */
+        header {
+            background: #1b202c;
+            border-bottom: 3px solid #363f54;
+            box-shadow: 0 4px 0 #10131a, 0 10px 20px rgba(0,0,0,0.5);
+            padding: 12px 18px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
 
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                repeating-linear-gradient(90deg, transparent 0px, transparent 80px, rgba(20,60,30,0.08) 80px, rgba(20,60,30,0.08) 82px);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: 248px;
-            background: linear-gradient(180deg, #0b2016 0%, #071a0e 100%);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            z-index: 100;
-            box-shadow: 4px 0 32px rgba(0,0,0,0.5);
-        }
-
-        .logo {
-            padding: 28px 24px 22px;
-            border-bottom: 1px solid var(--border);
-            position: relative;
-        }
-
-        .logo::after {
-            content: '';
-            position: absolute;
-            bottom: -1px; left: 24px; right: 24px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
-            opacity: 0.3;
-        }
-
-        .logo-icon {
-            width: 42px; height: 42px;
-            background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 20px rgba(53,224,122,0.3);
-        }
-
-        .logo h1 { font-size: 21px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
-        .logo p { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 3px; }
-
-        .nav {
-            padding: 18px 12px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            overflow-y: auto;
-        }
-
-        .nav-label {
-            font-size: 9px;
-            font-family: 'DM Mono', monospace;
-            color: var(--muted);
-            letter-spacing: 2px;
-            padding: 12px 14px 6px;
-            text-transform: uppercase;
-            opacity: 0.7;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--muted);
-            transition: all 0.2s ease;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background: rgba(53,224,122,0.07);
-            color: var(--text);
-            padding-left: 18px;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(90deg, rgba(53,224,122,0.15), rgba(53,224,122,0.05));
-            color: var(--green-bright);
-            border-left: 3px solid var(--green-bright);
-            padding-left: 11px;
-        }
-
-        .nav-item .icon { font-size: 16px; width: 22px; text-align: center; }
-
-        .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid var(--border);
-        }
-
-        .machine-status {
-            background: rgba(53,224,122,0.06);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 13px 14px;
-            font-size: 12px;
-        }
-
-        .machine-status .label { color: var(--muted); margin-bottom: 8px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; }
-        .machine-status .machine { display: flex; align-items: center; gap: 8px; color: var(--text); font-weight: 700; font-size: 13px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-bright); box-shadow: 0 0 8px var(--green-bright); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
-
-        /* Main Content */
-        .main {
-            margin-left: 248px;
-            padding: 32px 36px;
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-        }
-
-        .topbar {
+        .header-inner {
+            max-width: 1300px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 16px;
         }
 
-        .topbar h2 {
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            color: var(--text);
-        }
-
-        .topbar-right { display: flex; gap: 10px; align-items: center; }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-family: 'Nunito Sans', sans-serif;
-            font-weight: 800;
-            font-size: 13px;
-            transition: all 0.2s;
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             text-decoration: none;
-            display: inline-block;
+            color: inherit;
         }
 
-        .btn-ghost {
-            background: rgba(255,255,255,0.06);
-            color: var(--text);
-            border: 1px solid var(--border);
+        .retro-stationery-sign {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--retro-red), var(--retro-red-deep));
+            border: 2px solid #ffffff;
+            box-shadow: 0 3px 0 #7e0c0d, 0 6px 12px rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(53,224,122,0.3); }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
-            color: #061410;
-            box-shadow: 0 8px 24px rgba(53,224,122,0.25);
+        .sign-kanji {
+            font-family: 'Dela Gothic One', sans-serif;
+            font-size: 0.9rem;
+            color: #ffffff;
+            line-height: 1;
         }
 
-        .btn-primary:hover { filter: brightness(1.08); }
-
-        .export-dropdown {
-            position: relative;
-            display: inline-block;
+        .sign-sub-tag {
+            font-size: 0.5rem;
+            font-family: var(--font-mono);
+            letter-spacing: 0.08em;
+            color: #ffcccc;
+            margin-top: 1px;
         }
 
-        .export-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 8px;
-            background: var(--surface-solid);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            min-width: 220px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-            z-index: 1000;
-            display: none;
-            overflow: hidden;
+        .brand-text h1 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--retro-cream);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .export-menu.show { display: block; }
+        .brand-jp-badge {
+            font-size: 0.62rem;
+            font-family: var(--font-body);
+            font-weight: 900;
+            color: #12151b;
+            background: var(--retro-mustard);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
 
-        .export-option {
-            padding: 11px 14px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text);
+        .nav-actions {
             display: flex;
             align-items: center;
             gap: 8px;
-            border-bottom: 1px solid rgba(53,224,122,0.08);
-        }
-
-        .export-option:last-child { border-bottom: none; }
-        .export-option:hover { background: rgba(53,224,122,0.08); color: var(--green-bright); }
-
-        /* Stats Cards */
-        .stats-mini {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-mini-card {
-            background: linear-gradient(145deg, rgba(14,40,22,0.9), rgba(9,25,14,0.95));
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 18px;
-        }
-
-        .stat-mini-label {
-            font-size: 10px;
-            font-family: 'DM Mono', monospace;
-            color: var(--muted);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .stat-mini-value {
-            font-size: 28px;
-            font-weight: 900;
-            color: var(--text);
-        }
-
-        /* Filter Bar */
-        .filter-bar {
-            background: linear-gradient(160deg, rgba(13,38,22,0.92), rgba(8,22,13,0.97));
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
             flex-wrap: wrap;
         }
 
-        .filter-group {
+        .retro-link-btn {
+            background: #232938;
+            border: 2px solid #3c465d;
+            box-shadow: 0 3px 0 #12151b;
+            color: var(--retro-cream);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-decoration: none;
             display: flex;
             align-items: center;
+            gap: 6px;
+            transition: all 0.12s;
+        }
+
+        .retro-link-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #12151b;
+        }
+
+        .retro-link-btn.active {
+            background: #ffeaa7;
+            border-color: #ffffff;
+            color: #12151b;
+            box-shadow: 0 3px 0 #b39b56;
+            font-weight: 900;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1300px;
+            margin: 20px auto;
+            padding: 0 16px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Sensor Diagnostics Grid */
+        .sensors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
+        }
+
+        .sensor-card {
+            background: #232938;
+            border: 2px solid #3a445b;
+            border-radius: var(--radius-box);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 0 #13161f;
+        }
+
+        .sensor-title {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: var(--retro-cream);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sensor-sub {
+            font-size: 0.68rem;
+            color: var(--retro-cream-muted);
+            margin-top: 2px;
+        }
+
+        .badge-sensor-clear {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.4);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+        }
+
+        .badge-sensor-beam {
+            background: rgba(214, 48, 49, 0.15);
+            color: #ff7675;
+            border: 1px solid rgba(214, 48, 49, 0.4);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+        }
+
+        /* Panel Card */
+        .retro-panel-card {
+            background: #232938;
+            border: 2px solid #3a445b;
+            border-radius: var(--radius-box);
+            box-shadow: 0 6px 0 #13161f, 0 12px 24px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-header-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px dashed #30394c;
+            padding-bottom: 12px;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .filter-group label {
-            font-size: 11px;
-            font-family: 'DM Mono', monospace;
-            color: var(--muted);
-            text-transform: uppercase;
+        .panel-heading {
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--retro-cream);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .filter-select, .filter-input {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: var(--text);
-            font-family: 'Nunito Sans', sans-serif;
-            font-size: 13px;
+        /* Filter Strip */
+        .filter-bar {
+            background: #181d27;
+            border: 1px solid #333a4c;
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            background: #212634;
+            border: 1px solid #3a445b;
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: #ffeaa7;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
             outline: none;
-            min-width: 160px;
         }
 
-        .filter-select option { background: var(--surface-solid); }
+        .filter-select {
+            background: #212634;
+            border: 1px solid #3a445b;
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--retro-cream);
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .btn-filter {
+            background: #344055;
+            border: 1px solid #4a5772;
+            color: var(--retro-cream);
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-csv-export {
+            background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            box-shadow: 0 2px 0 #1b663e;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
         /* Table */
-        .card {
-            background: linear-gradient(160deg, rgba(13,38,22,0.92), rgba(8,22,13,0.97));
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            overflow: hidden;
-            margin-bottom: 24px;
+        .table-responsive {
+            overflow-x: auto;
         }
 
-        table { width: 100%; border-collapse: collapse; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.82rem;
+        }
 
         th {
-            padding: 14px 18px;
-            text-align: left;
-            font-size: 9px;
-            font-family: 'DM Mono', monospace;
-            color: var(--muted);
-            letter-spacing: 1.5px;
+            padding: 10px 12px;
+            color: var(--retro-cream-muted);
+            border-bottom: 2px solid #30394c;
+            font-weight: 700;
             text-transform: uppercase;
-            background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid var(--border);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            font-family: var(--font-mono);
         }
 
         td {
-            padding: 14px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(53,224,122,0.05);
-            color: var(--text);
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
         }
 
-        tr:hover td { background: rgba(53,224,122,0.03); }
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 10px;
+        .badge-log {
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.68rem;
             font-weight: 800;
-            font-family: 'DM Mono', monospace;
+            font-family: var(--font-mono);
+            display: inline-block;
         }
 
-        .badge-scan { background: rgba(90,180,255,0.12); color: var(--blue); border: 1px solid rgba(90,180,255,0.2); }
-        .badge-transaction { background: rgba(53,224,122,0.12); color: var(--green-bright); border: 1px solid rgba(53,224,122,0.2); }
-        .badge-registration { background: rgba(245,200,66,0.12); color: var(--accent); border: 1px solid rgba(245,200,66,0.2); }
-        .badge-reward { background: rgba(168,240,198,0.12); color: var(--green-light); border: 1px solid rgba(168,240,198,0.2); }
-        .badge-profile { background: rgba(200,180,255,0.12); color: #b8a2ff; border: 1px solid rgba(200,180,255,0.2); }
-        .badge-error { background: rgba(224,90,90,0.12); color: var(--red); border: 1px solid rgba(224,90,90,0.2); }
-
-        /* Pagination */
         .pagination {
             display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-top: 24px;
+            gap: 6px;
+            margin-top: 10px;
         }
 
-        .page-link {
-            padding: 8px 14px;
-            border-radius: 8px;
+        .page-btn {
+            background: #181d27;
+            border: 1px solid #333a4c;
+            color: var(--retro-cream);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 13px;
-            background: rgba(255,255,255,0.05);
-            color: var(--text);
-            border: 1px solid var(--border);
-            transition: all 0.2s;
+            font-family: var(--font-mono);
         }
 
-        .page-link:hover { background: rgba(53,224,122,0.1); border-color: rgba(53,224,122,0.3); }
-        .page-link.active { background: var(--green-bright); color: #061410; border-color: var(--green-bright); }
-
-        .empty-state {
-            padding: 60px;
-            text-align: center;
-            color: var(--muted);
+        .page-btn.active {
+            background: #ffeaa7;
+            color: #12151b;
+            font-weight: 800;
+            border-color: #ffffff;
         }
 
-        .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
-
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(53, 224, 122, 0.45) rgba(8, 24, 14, 0.8);
-        }
-
-        *::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-
-        *::-webkit-scrollbar-track {
-            background: rgba(8, 24, 14, 0.8);
-            border-radius: 999px;
-        }
-
-        *::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, rgba(53, 224, 122, 0.7), rgba(30, 122, 69, 0.85));
-            border: 2px solid rgba(8, 24, 14, 0.8);
-            border-radius: 999px;
-        }
-
-        *::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, rgba(80, 238, 141, 0.85), rgba(40, 184, 94, 0.95));
+        @media (max-width: 480px) {
+            .sensors-grid { grid-template-columns: 1fr; }
+            .retro-link-btn span { display: none; }
         }
     </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">♻️</div>
-            <h1>EcoPoints</h1>
-            <p>Admin Dashboard</p>
-        </div>
-        <nav class="nav">
-            <div class="nav-label">PenPoint Console</div>
-            <a href="index.php" class="nav-item"><span class="icon">🗂️</span> Slots Matrix</a>
-            <a href="transaction_logs.php" class="nav-item"><span class="icon">🧾</span> Dispense Logs</a>
-            <a href="analytics.php" class="nav-item"><span class="icon">📈</span> Analytics</a>
-            <a href="activity_logs.php" class="nav-item active"><span class="icon">⚡</span> Sensors & Audit</a>
-            <a href="../public/index.php" class="nav-item" target="_blank"><span class="icon">🏪</span> Student Kiosk ↗</a>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="machine-status">
-                <div class="label">MACHINE STATUS</div>
-                <div class="machine"><div class="dot"></div> M001 · Main Building</div>
-            </div>
-        </div>
-    </aside>
 
-    <main class="main">
-        <div class="topbar">
-            <div>
-                <h2>Activity Logs 📜</h2>
-                <div style="font-size:13px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace">System-wide activity tracking</div>
+    <!-- Unified Command Navigation Header -->
+    <header>
+        <div class="header-inner">
+            <a href="index.php" class="brand-cluster">
+                <div class="retro-stationery-sign">
+                    <span class="sign-kanji">監査</span>
+                    <span class="sign-sub-tag">AUDIT</span>
+                </div>
+                <div class="brand-text">
+                    <h1><?= APP_NAME ?> <span class="brand-jp-badge">センサー・監査</span></h1>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                <a href="index.php" class="retro-link-btn">
+                    <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+                    <span>Slots Matrix</span>
+                </a>
+                <a href="transaction_logs.php" class="retro-link-btn">
+                    <i data-lucide="receipt" style="width: 14px; height: 14px; color: #74b9ff;"></i>
+                    <span>Dispense Logs</span>
+                </a>
+                <a href="analytics.php" class="retro-link-btn">
+                    <i data-lucide="bar-chart-2" style="width: 14px; height: 14px; color: var(--retro-mustard);"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="activity_logs.php" class="retro-link-btn active">
+                    <i data-lucide="activity" style="width: 14px; height: 14px; color: #2ecc71;"></i>
+                    <span>Sensors & Audit</span>
+                </a>
+                <a href="../public/index.php" class="retro-link-btn" target="_blank" title="View Public Student Kiosk">
+                    <i data-lucide="external-link" style="width: 14px; height: 14px; color: #ffeaa7;"></i>
+                    <span>Kiosk</span>
+                </a>
+                <a href="index.php?logout=1" class="retro-link-btn" style="color: #ff7675; border-color: rgba(214, 48, 49, 0.4);">
+                    <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                    <span>Logout</span>
+                </a>
             </div>
-            <div class="topbar-right">
-                <a href="activity_logs.php" class="btn btn-ghost">🔄 Refresh</a>
-                <div class="export-dropdown">
-                    <button class="btn btn-primary" onclick="toggleExportMenu()">📥 Export ▼</button>
-                    <div class="export-menu" id="exportMenu">
-                        <div class="export-option" onclick="exportToCSV()">
-                            <span>📄</span> Export as CSV
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Live Sensor Diagnostics Bar -->
+        <div class="retro-panel-card">
+            <div class="panel-header-strip">
+                <div class="panel-heading">
+                    <i data-lucide="cpu" style="color: #74b9ff; width: 18px; height: 18px;"></i>
+                    Live ESP32 Cabinet & IR Break-Beam Diagnostics
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: #4ade80; display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80;"></span>
+                    PING: <?= htmlspecialchars($sensorData['last_ping'] ?? 'LIVE') ?>
+                </div>
+            </div>
+
+            <div class="sensors-grid">
+                <div class="sensor-card">
+                    <div>
+                        <div class="sensor-title">
+                            <i data-lucide="radio" style="width: 14px; height: 14px; color: #74b9ff;"></i>
+                            Tier 1 IR Beam
                         </div>
-                        <div class="export-option" onclick="exportToPDF('portrait')">
-                            <span>📑</span> Export PDF (Portrait)
-                        </div>
-                        <div class="export-option" onclick="exportToPDF('landscape')">
-                            <span>📑</span> Export PDF (Landscape)
-                        </div>
+                        <div class="sensor-sub">Long Bond Exit</div>
                     </div>
+                    <span class="<?= $sensorData['tier_1_ir'] === 'CLEAR' ? 'badge-sensor-clear' : 'badge-sensor-beam' ?>">
+                        <?= htmlspecialchars($sensorData['tier_1_ir']) ?>
+                    </span>
+                </div>
+
+                <div class="sensor-card">
+                    <div>
+                        <div class="sensor-title">
+                            <i data-lucide="radio" style="width: 14px; height: 14px; color: #74b9ff;"></i>
+                            Tier 2 IR Beam
+                        </div>
+                        <div class="sensor-sub">A4 Bond Exit</div>
+                    </div>
+                    <span class="<?= $sensorData['tier_2_ir'] === 'CLEAR' ? 'badge-sensor-clear' : 'badge-sensor-beam' ?>">
+                        <?= htmlspecialchars($sensorData['tier_2_ir']) ?>
+                    </span>
+                </div>
+
+                <div class="sensor-card">
+                    <div>
+                        <div class="sensor-title">
+                            <i data-lucide="radio" style="width: 14px; height: 14px; color: #74b9ff;"></i>
+                            Tier 3 IR Beam
+                        </div>
+                        <div class="sensor-sub">Short Bond Exit</div>
+                    </div>
+                    <span class="<?= $sensorData['tier_3_ir'] === 'CLEAR' ? 'badge-sensor-clear' : 'badge-sensor-beam' ?>">
+                        <?= htmlspecialchars($sensorData['tier_3_ir']) ?>
+                    </span>
+                </div>
+
+                <div class="sensor-card">
+                    <div>
+                        <div class="sensor-title">
+                            <i data-lucide="radio" style="width: 14px; height: 14px; color: #74b9ff;"></i>
+                            Tier 4 IR Beam
+                        </div>
+                        <div class="sensor-sub">Stationery Chute (Slots 4-6)</div>
+                    </div>
+                    <span class="<?= $sensorData['tier_4_ir'] === 'CLEAR' ? 'badge-sensor-clear' : 'badge-sensor-beam' ?>">
+                        <?= htmlspecialchars($sensorData['tier_4_ir']) ?>
+                    </span>
+                </div>
+
+                <div class="sensor-card" style="border-left: 3px solid <?= $sensorData['door_switch'] === 'CLOSED' ? '#2ecc71' : '#e74c3c' ?>;">
+                    <div>
+                        <div class="sensor-title">
+                            <i data-lucide="shield-alert" style="width: 14px; height: 14px; color: #f39c12;"></i>
+                            Door Limit Switch
+                        </div>
+                        <div class="sensor-sub">Anti-Tamper Monitor</div>
+                    </div>
+                    <span class="<?= $sensorData['door_switch'] === 'CLOSED' ? 'badge-sensor-clear' : 'badge-sensor-beam' ?>">
+                        <?= $sensorData['door_switch'] === 'CLOSED' ? 'LOCKED / CLOSED' : 'ALARM: TAMPER OPEN' ?>
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Mini Stats -->
-        <div class="stats-mini">
-            <div class="stat-mini-card">
-                <div class="stat-mini-label">Total Events</div>
-                <div class="stat-mini-value"><?= number_format($stats['total']) ?></div>
+        <!-- System Audit Log Panel -->
+        <div class="retro-panel-card">
+            <div class="panel-header-strip">
+                <div class="panel-heading">
+                    <i data-lucide="scroll" style="color: #ffeaa7; width: 18px; height: 18px;"></i>
+                    Activity Audit Trail (<?= number_format($totalRows) ?> Events)
+                </div>
+                <div>
+                    <a href="activity_logs.php?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn-csv-export">
+                        <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                        Export Audit CSV
+                    </a>
+                </div>
             </div>
-            <div class="stat-mini-card">
-                <div class="stat-mini-label">Today's Activity</div>
-                <div class="stat-mini-value"><?= number_format($stats['today']) ?></div>
-            </div>
-            <div class="stat-mini-card">
-                <div class="stat-mini-label">Recent Errors (24h)</div>
-                <div class="stat-mini-value" style="color: <?= $stats['recent_errors'] > 0 ? 'var(--red)' : 'var(--green-bright)' ?>"><?= $stats['recent_errors'] ?></div>
-            </div>
-            <div class="stat-mini-card">
-                <div class="stat-mini-label">Transactions</div>
-                <div class="stat-mini-value"><?= number_format($stats['by_type']['transaction'] ?? 0) ?></div>
-            </div>
-        </div>
 
-        <!-- Filter Bar -->
-        <form class="filter-bar" method="GET">
-            <div class="filter-group">
-                <label>Type:</label>
-                <select name="type" class="filter-select" onchange="this.form.submit()">
-                    <option value="">All Types</option>
-                    <?php foreach ($logTypes as $t): ?>
-                    <option value="<?= htmlspecialchars($t) ?>" <?= $type === $t ? 'selected' : '' ?>>
-                        <?= ucfirst($t) ?>
-                    </option>
+            <!-- Filter Controls -->
+            <form method="GET" action="activity_logs.php" class="filter-bar">
+                <input type="text" name="search" class="filter-input" placeholder="Search details, actor, machine..." value="<?= htmlspecialchars($search) ?>" style="flex: 1; min-width: 180px;">
+
+                <select name="type" class="filter-select">
+                    <option value="">All Event Types</option>
+                    <?php foreach ($typeList as $tl): ?>
+                        <option value="<?= htmlspecialchars($tl) ?>" <?= $type === $tl ? 'selected' : '' ?>>
+                            <?= htmlspecialchars(strtoupper($tl)) ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
-            </div>
-            <div class="filter-group">
-                <label>Card ID:</label>
-                <select name="idcard" class="filter-select" onchange="this.form.submit()">
-                    <option value="">All Users</option>
-                    <?php foreach ($users as $u): ?>
-                    <option value="<?= htmlspecialchars($u['idcard']) ?>" <?= $idcard === $u['idcard'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars(substr($u['idcard'], 0, 10)) ?>... (<?= htmlspecialchars($u['fname'] ?: '—') ?>)
-                    </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <?php if ($type || $idcard): ?>
-            <a href="activity_logs.php" class="btn btn-ghost" style="margin-left:auto;">Clear Filters</a>
-            <?php endif; ?>
-        </form>
 
-        <!-- Logs Table -->
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Type</th>
-                        <th>Card ID</th>
-                        <th>User</th>
-                        <th>Machine</th>
-                        <th>Details</th>
-                        <th>Points</th>
-                        <th>IP</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($logs)): ?>
-                    <tr><td colspan="8" class="empty-state"><div class="empty-icon">📜</div>No activity logs found</td></tr>
-                    <?php else: ?>
-                        <?php foreach ($logs as $log): 
-                            $badgeClass = match($log['log_type']) {
-                                'scan' => 'badge-scan',
-                                'transaction' => 'badge-transaction',
-                                'registration' => 'badge-registration',
-                                'reward_claim' => 'badge-reward',
-                                'profile_update' => 'badge-profile',
-                                'error' => 'badge-error',
-                                default => ''
-                            };
-                        ?>
+                <input type="date" name="date_from" class="filter-input" value="<?= htmlspecialchars($date_from) ?>" title="From Date">
+                <input type="date" name="date_to" class="filter-input" value="<?= htmlspecialchars($date_to) ?>" title="To Date">
+
+                <button type="submit" class="btn-filter">
+                    <i data-lucide="filter" style="width: 13px; height: 13px;"></i> Filter
+                </button>
+                <?php if ($search || $type || $date_from || $date_to): ?>
+                    <a href="activity_logs.php" class="btn-filter" style="background: transparent; border-color: #555;">Clear</a>
+                <?php endif; ?>
+            </form>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
                         <tr>
-                            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);"><?= date('M j, g:i:s A', strtotime($log['created_at'])) ?></td>
-                            <td><span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($log['log_type'] ?? '—') ?></span></td>
-                            <td style="font-family:'DM Mono',monospace;font-size:12px;"><?= htmlspecialchars(substr($log['idcard'] ?? '—', 0, 10)) ?>...</td>
-                            <td><?= htmlspecialchars(trim($log['fname'] . ' ' . $log['lname']) ?: '—') ?></td>
-                            <td><span style="font-family:'DM Mono',monospace;"><?= htmlspecialchars($log['machine_id'] ?? '—') ?></span></td>
-                            <td style="max-width:250px;"><?= htmlspecialchars($log['details'] ?? '—') ?></td>
-                            <td style="font-family:'DM Mono',monospace;">
-                                <?php if ($log['points_change'] !== null): ?>
-                                <span style="color: <?= $log['points_change'] >= 0 ? 'var(--green-bright)' : 'var(--red)' ?>">
-                                    <?= $log['points_change'] > 0 ? '+' : '' ?><?= $log['points_change'] ?>
-                                </span>
-                                <?php else: ?>—<?php endif; ?>
-                            </td>
-                            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);"><?= htmlspecialchars($log['ip_address'] ?? '—') ?></td>
+                            <th>Event Type</th>
+                            <th>Details & Action Taken</th>
+                            <th>Actor / Operator</th>
+                            <th>Machine Unit</th>
+                            <th>IP Address</th>
+                            <th>Timestamp</th>
                         </tr>
-                        <?php endforeach; ?>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($logs)): ?>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 36px 0; color: var(--retro-cream-muted);">
+                                    <i data-lucide="shield-check" style="width: 28px; height: 28px; opacity: 0.5; margin-bottom: 6px; display: inline-block;"></i><br>
+                                    No activity events found matching criteria.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($logs as $l): ?>
+                                <?php 
+                                    $lt = strtolower($l['log_type'] ?? 'info');
+                                    $badgeColor = '#74b9ff';
+                                    $badgeBg = 'rgba(116, 185, 255, 0.15)';
+                                    if (strpos($lt, 'restock') !== false) {
+                                        $badgeColor = '#ffeaa7';
+                                        $badgeBg = 'rgba(255, 234, 167, 0.15)';
+                                    } elseif (strpos($lt, 'refund') !== false || strpos($lt, 'alert') !== false || strpos($lt, 'error') !== false) {
+                                        $badgeColor = '#ff7675';
+                                        $badgeBg = 'rgba(214, 48, 49, 0.15)';
+                                    } elseif (strpos($lt, 'dispense') !== false || strpos($lt, 'success') !== false) {
+                                        $badgeColor = '#2ecc71';
+                                        $badgeBg = 'rgba(46, 204, 113, 0.15)';
+                                    }
+                                ?>
+                                <tr>
+                                    <td>
+                                        <span class="badge-log" style="color: <?= $badgeColor ?>; background: <?= $badgeBg ?>; border: 1px solid <?= $badgeColor ?>44;">
+                                            <?= htmlspecialchars(strtoupper($l['log_type'] ?? 'EVENT')) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 700; color: var(--retro-cream); line-height: 1.4;">
+                                            <?= htmlspecialchars($l['details']) ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #ffeaa7;">
+                                            <?= htmlspecialchars($l['idcard'] ?? 'SYSTEM') ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #74b9ff;">
+                                            <?= htmlspecialchars($l['machine_id'] ?? DEFAULT_MACHINE_ID) ?>
+                                        </span>
+                                    </td>
+                                    <td style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--retro-cream-muted);">
+                                        <?= htmlspecialchars($l['ip_address'] ?? '127.0.0.1') ?>
+                                    </td>
+                                    <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--retro-cream-muted);">
+                                        <?= date('M d, Y • h:i A', strtotime($l['created_at'])) ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <div class="pagination">
+                    <?php if ($page > 1): ?>
+                        <a href="activity_logs.php?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>" class="page-btn">« Prev</a>
                     <?php endif; ?>
-                </tbody>
-            </table>
+
+                    <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
+                        <a href="activity_logs.php?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>" class="page-btn <?= $i === $page ? 'active' : '' ?>">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                        <a href="activity_logs.php?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>" class="page-btn">Next »</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
         </div>
 
-        <!-- Pagination -->
-        <?php if ($totalPages > 1): ?>
-        <div class="pagination">
-            <?php if ($page > 1): ?>
-            <a href="?page=<?= $page-1 ?>&type=<?= urlencode($type) ?>&idcard=<?= urlencode($idcard) ?>" class="page-link">← Previous</a>
-            <?php endif; ?>
-            
-            <?php for ($i = max(1, $page-2); $i <= min($totalPages, $page+2); $i++): ?>
-            <a href="?page=<?= $i ?>&type=<?= urlencode($type) ?>&idcard=<?= urlencode($idcard) ?>" class="page-link <?= $i === $page ? 'active' : '' ?>"><?= $i ?></a>
-            <?php endfor; ?>
-            
-            <?php if ($page < $totalPages): ?>
-            <a href="?page=<?= $page+1 ?>&type=<?= urlencode($type) ?>&idcard=<?= urlencode($idcard) ?>" class="page-link">Next →</a>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
-    </main>
+    </div>
+
     <script>
-        function toggleExportMenu() {
-            const menu = document.getElementById('exportMenu');
-            menu.classList.toggle('show');
-        }
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.export-dropdown')) {
-                document.getElementById('exportMenu').classList.remove('show');
-            }
-        });
-
-        function exportToCSV() {
-            document.getElementById('exportMenu').classList.remove('show');
-
-            const rows = [];
-            const headers = ['Time', 'Type', 'Card ID', 'User', 'Machine', 'Details', 'Points', 'IP'];
-            rows.push(headers.join(','));
-
-            <?php foreach ($logs as $log): ?>
-            rows.push([
-                '<?= date('Y-m-d H:i:s', strtotime($log['created_at'])) ?>',
-                '<?= str_replace([",", "\r", "\n"], [";", "", ""], htmlspecialchars($log['log_type'] ?? '—')) ?>',
-                '<?= htmlspecialchars($log['idcard'] ?? '—') ?>',
-                '<?= str_replace([",", "\r", "\n"], [";", "", ""], htmlspecialchars(trim(($log['fname'] ?? '') . ' ' . ($log['lname'] ?? '')) ?: '—')) ?>',
-                '<?= str_replace([",", "\r", "\n"], [";", "", ""], htmlspecialchars($log['machine_id'] ?? '—')) ?>',
-                '<?= str_replace([",", "\r", "\n"], [";", "", ""], htmlspecialchars($log['details'] ?? '—')) ?>',
-                '<?= $log['points_change'] !== null ? $log['points_change'] : '—' ?>',
-                '<?= htmlspecialchars($log['ip_address'] ?? '—') ?>'
-            ].join(','));
-            <?php endforeach; ?>
-
-            const csv = rows.join('\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'activity_logs_<?= date('Y-m-d') ?>.csv';
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-
-        function exportToPDF(orientation = 'landscape') {
-            document.getElementById('exportMenu').classList.remove('show');
-
-            const { jsPDF } = window.jspdf;
-            const isPortrait = orientation === 'portrait';
-            const doc = new jsPDF({ orientation: isPortrait ? 'portrait' : 'landscape', unit: 'mm', format: 'a4' });
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const generatedAt = new Date().toLocaleString();
-
-            const drawHeader = (pageNumber) => {
-                doc.setFillColor(16, 185, 129);
-                doc.rect(0, 0, pageWidth, 10, 'F');
-
-                doc.setFillColor(34, 197, 94);
-                doc.roundedRect(14, 14, 12, 12, 2, 2, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(10);
-                doc.text('EP', 20, 22, { align: 'center' });
-
-                doc.setTextColor(24, 24, 27);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(16);
-                doc.text('EcoPoints Activity Log Report', 30, 19);
-                doc.setTextColor(82, 82, 91);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(10);
-                doc.text('System-wide activity tracking', 30, 24);
-
-                doc.setFontSize(9);
-                doc.setTextColor(63, 63, 70);
-                doc.text('Generated: ' + generatedAt, pageWidth - 14, 18, { align: 'right' });
-                doc.text('Page ' + pageNumber, pageWidth - 14, 23, { align: 'right' });
-
-                doc.setDrawColor(228, 228, 231);
-                doc.setLineWidth(0.2);
-                doc.line(14, 32, pageWidth - 14, 32);
-            };
-
-            const drawFooter = () => {
-                doc.setDrawColor(228, 228, 231);
-                doc.setLineWidth(0.2);
-                doc.line(14, pageHeight - 12, pageWidth - 14, pageHeight - 12);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(113, 113, 122);
-                doc.text('EcoPoints Admin Report', 14, pageHeight - 7);
-                doc.text('Confidential', pageWidth - 14, pageHeight - 7, { align: 'right' });
-            };
-
-            drawHeader(1);
-
-            const summaryY = 38;
-            const cardWidth = isPortrait ? ((pageWidth - 14 - 14 - 4) / 2) : 62;
-            const cardGap = 4;
-            const cardHeight = 18;
-            const cardsPerRow = isPortrait ? 2 : 4;
-            const summaryCards = [
-                { label: 'Total Events', value: '<?= number_format($stats['total']) ?>' },
-                { label: "Today's Activity", value: '<?= number_format($stats['today']) ?>' },
-                { label: 'Recent Errors (24h)', value: '<?= number_format($stats['recent_errors']) ?>' },
-                { label: 'Transactions', value: '<?= number_format($stats['by_type']['transaction'] ?? 0) ?>' }
-            ];
-
-            summaryCards.forEach((card, index) => {
-                const row = Math.floor(index / cardsPerRow);
-                const col = index % cardsPerRow;
-                const x = 14 + col * (cardWidth + cardGap);
-                const y = summaryY + row * (cardHeight + 4);
-                doc.setFillColor(244, 244, 245);
-                doc.roundedRect(x, y, cardWidth, cardHeight, 2, 2, 'F');
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(113, 113, 122);
-                doc.text(card.label, x + 3, y + 6);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(12);
-                doc.setTextColor(24, 24, 27);
-                doc.text(card.value, x + 3, y + 13);
-            });
-
-            let filterText = 'No filters applied';
-            const activeFilters = [];
-            <?php if ($type): ?> activeFilters.push('Type: <?= htmlspecialchars($type) ?>'); <?php endif; ?>
-            <?php if ($idcard): ?> activeFilters.push('User: <?= htmlspecialchars(substr($idcard, 0, 12)) ?>...'); <?php endif; ?>
-            if (activeFilters.length > 0) filterText = activeFilters.join(' | ');
-
-            const tableStartY = isPortrait ? 84 : 68;
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(82, 82, 91);
-            doc.text('Filters: ' + filterText, 14, tableStartY - 6);
-
-            const headers = ['Time', 'Type', 'Card ID', 'User', 'Machine', 'Details', 'Points', 'IP'];
-            const data = [];
-            <?php foreach ($logs as $log): ?>
-            data.push([
-                '<?= date('Y-m-d H:i:s', strtotime($log['created_at'])) ?>',
-                '<?= htmlspecialchars($log['log_type'] ?? '—') ?>',
-                '<?= htmlspecialchars(substr($log['idcard'] ?? '—', 0, 12)) ?>...',
-                '<?= htmlspecialchars(trim(($log['fname'] ?? '') . ' ' . ($log['lname'] ?? '')) ?: '—') ?>',
-                '<?= htmlspecialchars($log['machine_id'] ?? '—') ?>',
-                '<?= htmlspecialchars(substr($log['details'] ?? '—', 0, 60)) ?>',
-                '<?= $log['points_change'] !== null ? $log['points_change'] : '—' ?>',
-                '<?= htmlspecialchars($log['ip_address'] ?? '—') ?>'
-            ]);
-            <?php endforeach; ?>
-
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: tableStartY,
-                styles: {
-                    font: 'helvetica',
-                    fontSize: isPortrait ? 7.2 : 8.3,
-                    cellPadding: isPortrait ? 2 : 2.6,
-                    lineColor: [228, 228, 231],
-                    lineWidth: 0.1,
-                    textColor: [39, 39, 42]
-                },
-                headStyles: {
-                    fillColor: [22, 163, 74],
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold',
-                    halign: 'left'
-                },
-                alternateRowStyles: {
-                    fillColor: [250, 250, 250]
-                },
-                columnStyles: {
-                    0: { cellWidth: isPortrait ? 20 : 28 },
-                    1: { cellWidth: isPortrait ? 16 : 20 },
-                    2: { cellWidth: isPortrait ? 18 : 26 },
-                    3: { cellWidth: isPortrait ? 22 : 30 },
-                    4: { cellWidth: isPortrait ? 14 : 20, halign: 'center' },
-                    5: { cellWidth: isPortrait ? 45 : 80 },
-                    6: { cellWidth: isPortrait ? 14 : 16, halign: 'right' },
-                    7: { cellWidth: isPortrait ? 24 : 36 }
-                },
-                margin: { top: tableStartY, bottom: 16, left: 14, right: 14 },
-                didDrawPage: function (tableData) {
-                    drawHeader(tableData.pageNumber);
-                    drawFooter();
-                }
-            });
-
-            doc.save('activity_logs_' + orientation + '_<?= date('Y-m-d') ?>.pdf');
-        }
+        lucide.createIcons();
     </script>
 </body>
 </html>
