@@ -422,35 +422,6 @@ foreach ($products as $p) {
             height: 100%;
         }
 
-        .mascot-hud-tag {
-            position: absolute;
-            top: 2px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5;
-            background: rgba(18, 21, 27, 0.88);
-            border: 1px solid #3a445b;
-            border-radius: 5px;
-            padding: 2px 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-family: var(--font-mono);
-            font-size: 0.62rem;
-            color: #ffeaa7;
-            letter-spacing: 0.04em;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .mascot-hud-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #2ecc71;
-            box-shadow: 0 0 5px #2ecc71;
-        }
-
         .pop-vendo {
             position: absolute;
             z-index: 6;
@@ -1920,12 +1891,7 @@ foreach ($products as $p) {
             </div>
 
             <!-- Vendo the Mascot 3D Stage (Seamless, No Box Container) -->
-            <div class="mascot-bay" id="vendoMascotStage" role="img" aria-label="Vendo the PenPoint 3D mascot buddy">
-                <div class="mascot-hud-tag">
-                    <span class="mascot-hud-dot"></span>
-                    <span>VENDO • AI BUDDY</span>
-                </div>
-            </div>
+            <div class="mascot-bay" id="vendoMascotStage" role="img" aria-label="Vendo the PenPoint 3D mascot buddy"></div>
         </div>
     </div>
 

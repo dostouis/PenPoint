@@ -238,8 +238,9 @@
             const h = stageEl.clientHeight || 280;
             renderer.setSize(w, h, false);
             camera.aspect = w / h;
-            camera.position.set(0, 2.05, Math.max(8.2, 6.4 / camera.aspect));
-            camera.lookAt(0, 1.7, 0);
+            // Lower camera aim to center mascot with breathing room above antenna
+            camera.position.set(0, 2.35, Math.max(9.2, 7.2 / camera.aspect));
+            camera.lookAt(0, 1.85, 0);
             camera.updateProjectionMatrix();
         }
         if (window.ResizeObserver) {
