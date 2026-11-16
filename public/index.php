@@ -1942,8 +1942,8 @@ foreach ($products as $p) {
 
             <div class="checkout-dialog-head">
                 <div class="checkout-slot-stamp" id="modalSlot">SLOT 01 • TIER 1</div>
-                <h3 class="checkout-item-heading" id="modalItemName">Pilot G-Tec C4</h3>
-                <div class="checkout-price-dial" id="modalPrice">₱45.00</div>
+                <h3 class="checkout-item-heading" id="modalItemName">Panda Crystal Ballpen Black</h3>
+                <div class="checkout-price-dial" id="modalPrice">₱10.00</div>
             </div>
 
             <!-- Product Purpose & Academic Recommendation -->
@@ -2044,7 +2044,7 @@ foreach ($products as $p) {
             </div>
             <div class="receipt-line">
                 <span>ITEM:</span>
-                <span id="receiptItemName" style="font-weight: 700;">Pilot G-Tec C4</span>
+                <span id="receiptItemName" style="font-weight: 700;">Panda Crystal Ballpen Black</span>
             </div>
             <div class="receipt-line">
                 <span>QTY:</span>
@@ -2306,7 +2306,7 @@ foreach ($products as $p) {
                 1: 'Legal deeds, contracts, term papers & major project case studies.',
                 2: 'Departmental reports, thesis documentation, syllabus handouts & research.',
                 3: 'Daily class essays, quick quizzes, laboratory worksheets & exercises.',
-                4: 'Clean essay exams, blue book writing, accounting ledgers & official signing.',
+                4: 'Quick lecture notes, daily classroom activities, quiz answers & signatures.',
                 5: 'Standardized exams, midterms, finals, OMR bubble sheets & drafting.',
                 6: 'Official university prelims, midterms, finals & formal exam booklets.'
             };
@@ -2314,8 +2314,8 @@ foreach ($products as $p) {
                 1: '8.5 x 13 in (Long) • Substance 20 (75 GSM) • Pack of 5 Sheets',
                 2: '210 x 297 mm (ISO A4) • 80 GSM High Opacity • Pack of 5 Sheets',
                 3: '8.5 x 11 in (Letter) • Substance 20 • Pack of 5 Sheets',
-                4: '0.4mm Needle Point • Smudge-proof Japanese Bio-Polymer Ink',
-                5: 'Grade 2B High-Density Graphite • Break-resistant Core',
+                4: '0.7mm Medium Point • Classic Clear Hexagonal Barrel • Black Ink',
+                5: 'Grade No. 2 Medium Graphite • High-Density Core • Built-in Eraser',
                 6: 'Official UMak Lined Leaflet • Pack of 2 Examination Booklets'
             };
 
