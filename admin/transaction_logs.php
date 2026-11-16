@@ -594,6 +594,21 @@ if ($listRes) {
             font-weight: 900;
         }
 
+        .page-btn.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        .page-ellipsis {
+            color: var(--retro-cream-muted);
+            font-size: 0.85rem;
+            padding: 0 4px;
+            font-family: var(--font-mono);
+            user-select: none;
+        }
+
         @media (max-width: 480px) {
             header { padding: 8px 10px; }
             .header-inner { gap: 8px; }
@@ -842,19 +857,48 @@ if ($listRes) {
             <!-- Pagination -->
             <?php if ($totalPages > 1): ?>
                 <div class="pagination">
-                    <?php if ($page > 1): ?>
-                        <a href="transaction_logs.php?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>" class="page-btn">« Prev</a>
-                    <?php endif; ?>
+                    <a href="transaction_logs.php?<?= http_build_query(array_merge($_GET, ['page' => max(1, $page - 1)])) ?>" class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>" <?= $page <= 1 ? 'tabindex="-1" aria-disabled="true"' : '' ?>>« Prev</a>
 
-                    <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
+                    <?php
+                    // Smart pagination window
+                    $maxVisible = 7;
+                    if ($totalPages <= $maxVisible) {
+                        $start = 1;
+                        $end = $totalPages;
+                    } else {
+                        $start = max(1, $page - 2);
+                        $end = min($totalPages, $page + 2);
+                        if ($page <= 3) {
+                            $start = 1;
+                            $end = 5;
+                        } elseif ($page >= $totalPages - 2) {
+                            $start = $totalPages - 4;
+                            $end = $totalPages;
+                        }
+                    }
+
+                    if ($start > 1) {
+                        echo '<a href="transaction_logs.php?' . http_build_query(array_merge($_GET, ['page' => 1])) . '" class="page-btn">1</a>';
+                        if ($start > 2) {
+                            echo '<span class="page-ellipsis">…</span>';
+                        }
+                    }
+
+                    for ($i = $start; $i <= $end; $i++): ?>
                         <a href="transaction_logs.php?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>" class="page-btn <?= $i === $page ? 'active' : '' ?>">
                             <?= $i ?>
                         </a>
-                    <?php endfor; ?>
+                    <?php endfor;
 
-                    <?php if ($page < $totalPages): ?>
-                        <a href="transaction_logs.php?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>" class="page-btn">Next »</a>
-                    <?php endif; ?>
+                    if ($end < $totalPages) {
+                        if ($end < $totalPages - 1) {
+                            echo '<span class="page-ellipsis">…</span>';
+                        }
+                        echo '<a href="transaction_logs.php?' . http_build_query(array_merge($_GET, ['page' => $totalPages])) . '" class="page-btn">' . $totalPages . '</a>';
+                    }
+                    ?>
+
+                    <a href="transaction_logs.php?<?= http_build_query(array_merge($_GET, ['page' => min($totalPages, $page + 1)])) ?>" class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>" <?= $page >= $totalPages ? 'tabindex="-1" aria-disabled="true"' : '' ?>>Next »</a>
                 </div>
             <?php endif; ?>
 
