@@ -34,19 +34,39 @@
 
         function mkBot() {
             const g = new T.Group();
-            const navy = mat(0x2a3142, 0.35, 0.5);
-            const dark = mat(0x151821, 0.5, 0.3);
-            const steel = mat(0x8a93aa, 0.3, 0.8);
-            const red = mat(0xd63031, 0.35);
+            // Upgraded vibrant retro kiosk chassis materials
+            const cream = mat(0xfff8ea, 0.25, 0.05);   // Crisp warm Showa ivory cream for main body & head
+            const red = mat(0xe72b2b, 0.3, 0.1);       // Rich vibrant retro stationery red
+            const mustard = mat(0xf59e0b, 0.28, 0.15); // Vibrant gold/mustard trim & bevels
+            const dark = mat(0x1a2130, 0.45, 0.3);     // Deep midnight charcoal for contrast treads & chassis base
+            const steel = mat(0xc5d0e6, 0.2, 0.85);    // Bright reflective chrome/silver for springs & connectors
 
+            // Lower treads / wheels (dark wheels with bright chrome hubs & gold ring rim)
             for (const s of [-1, 1]) {
-                add(g, new T.CylinderGeometry(0.42, 0.42, 0.5, 28), dark, s * 0.8, 0.42, 0).rotation.z = PI / 2;
-                add(g, new T.CylinderGeometry(0.2, 0.2, 0.54, 16), steel, s * 0.8, 0.42, 0).rotation.z = PI / 2;
+                add(g, new T.CylinderGeometry(0.42, 0.42, 0.5, 28), red, s * 0.8, 0.42, 0).rotation.z = PI / 2;
+                add(g, new T.CylinderGeometry(0.35, 0.35, 0.52, 24), dark, s * 0.8, 0.42, 0).rotation.z = PI / 2;
+                add(g, new T.CylinderGeometry(0.18, 0.18, 0.56, 16), steel, s * 0.8, 0.42, 0).rotation.z = PI / 2;
+                add(g, new T.CylinderGeometry(0.08, 0.08, 0.60, 12), mustard, s * 0.8, 0.42, 0).rotation.z = PI / 2;
             }
-            add(g, new T.BoxGeometry(1.9, 0.3, 1.4), navy, 0, 0.65, 0);
-            add(g, new T.BoxGeometry(1.9, 1.3, 1.35), navy, 0, 1.45, 0);
-            add(g, new T.CylinderGeometry(0.25, 0.3, 0.2, 16), steel, 0, 2.15, 0);
-            add(g, new T.BoxGeometry(1.7, 1.0, 1.2), navy, 0, 2.65, 0);
+
+            // Chassis Base Plate (Vibrant red with gold accent strip)
+            add(g, new T.BoxGeometry(1.94, 0.3, 1.4), red, 0, 0.65, 0);
+            add(g, new T.BoxGeometry(1.96, 0.06, 1.42), mustard, 0, 0.78, 0);
+
+            // Torso Cabinet (Warm cream body with red side flank panels)
+            add(g, new T.BoxGeometry(1.9, 1.3, 1.35), cream, 0, 1.45, 0);
+            for (const s of [-1, 1]) {
+                add(g, new T.BoxGeometry(0.08, 1.22, 1.28), red, s * 0.94, 1.45, 0);
+            }
+
+            // Neck joint (Chrome ring with gold trim)
+            add(g, new T.CylinderGeometry(0.26, 0.3, 0.2, 16), steel, 0, 2.15, 0);
+            add(g, new T.CylinderGeometry(0.32, 0.32, 0.05, 16), mustard, 0, 2.15, 0);
+
+            // Head Chassis (Warm cream casing with red top cap and golden visor frame)
+            add(g, new T.BoxGeometry(1.7, 1.0, 1.2), cream, 0, 2.65, 0);
+            add(g, new T.BoxGeometry(1.74, 0.08, 1.24), red, 0, 3.16, 0); // Top visor cap
+            add(g, new T.BoxGeometry(1.5, 0.84, 0.04), mustard, 0, 2.66, 0.605); // Golden CRT bezel
 
             const drawLogo = (x, w, h) => {
                 const rr = (a, b, c, d, r, f) => {
@@ -59,7 +79,7 @@
                 rr(tx, ty + 7, S, S, 18, '#7e0c0d');
                 rr(tx, ty, S, S, 18, '#ffffff');
                 const grad = x.createLinearGradient(tx, ty, tx + S, ty + S);
-                grad.addColorStop(0, '#d63031');
+                grad.addColorStop(0, '#e72b2b');
                 grad.addColorStop(1, '#b71516');
                 rr(tx + 5, ty + 5, S - 10, S - 10, 14, grad);
 
@@ -70,12 +90,12 @@
                 x.fillText('文具', w / 2, ty + 62);
                 x.font = '500 22px "DM Mono", monospace'; 
                 x.fillText('PEN', w / 2, ty + 112);
-                x.fillStyle = '#fbf7ee'; 
+                x.fillStyle = '#1c2230'; 
                 x.font = '400 42px "Dela Gothic One", sans-serif'; 
                 x.fillText('PenPoint', w / 2, 188);
-                rr(w / 2 - 62, 212, 124, 22, 5, '#f39c12'); 
-                x.fillStyle = '#2d3436'; 
-                x.font = '500 13px "DM Mono", monospace'; 
+                rr(w / 2 - 64, 212, 128, 22, 6, '#e72b2b'); 
+                x.fillStyle = '#ffffff'; 
+                x.font = '700 13px "DM Mono", monospace'; 
                 x.fillText('SMART KIOSK', w / 2, 223.5);
             };
 
@@ -92,15 +112,16 @@
             pen.visible = false; 
             g.add(pen);
             add(pen, new T.CylinderGeometry(0.05, 0.05, 0.55, 12), red).rotation.z = PI / 2; 
-            add(pen, new T.CylinderGeometry(0.052, 0.052, 0.12, 12), mat(0xfbf7ee), 0.2, 0, 0).rotation.z = PI / 2;
+            add(pen, new T.CylinderGeometry(0.052, 0.052, 0.12, 12), mat(0xfff8ea), 0.2, 0, 0).rotation.z = PI / 2;
 
             const face = st => (x, w, h) => {
-                x.fillStyle = '#0b0f19'; 
+                x.fillStyle = '#0f172a'; 
                 x.fillRect(0, 0, w, h); 
-                x.fillStyle = x.strokeStyle = '#22c55e'; 
-                x.shadowColor = '#22c55e'; 
-                x.shadowBlur = 16; 
-                x.lineWidth = 12; 
+                // Vibrant luminous cyan-emerald digital display
+                x.fillStyle = x.strokeStyle = '#00f2a9'; 
+                x.shadowColor = '#00f2a9'; 
+                x.shadowBlur = 18; 
+                x.lineWidth = 13; 
                 x.lineCap = 'round';
                 for (const ex of [84, 196]) {
                     if (st === 'happy') {
@@ -120,24 +141,33 @@
 
             const fx = tex(280, 150, face('idle')); 
             let cur = 'idle';
-            add(g, new T.PlaneGeometry(1.4, 0.76), new T.MeshBasicMaterial({ map: fx.t }), 0, 2.66, 0.605);
+            add(g, new T.PlaneGeometry(1.36, 0.72), new T.MeshBasicMaterial({ map: fx.t }), 0, 2.66, 0.628);
 
+            // Ear Radios / Headphone Cans (Vibrant red & chrome with gold center bolts)
             for (const s of [-1, 1]) {
                 add(g, new T.CylinderGeometry(0.3, 0.3, 0.2, 24), red, s * 0.95, 2.65, 0).rotation.z = PI / 2;
-                add(g, new T.CylinderGeometry(0.14, 0.14, 0.24, 16), steel, s * 0.95, 2.65, 0).rotation.z = PI / 2;
+                add(g, new T.CylinderGeometry(0.22, 0.22, 0.24, 20), mustard, s * 0.95, 2.65, 0).rotation.z = PI / 2;
+                add(g, new T.CylinderGeometry(0.12, 0.12, 0.28, 16), steel, s * 0.95, 2.65, 0).rotation.z = PI / 2;
             }
-            add(g, new T.CylinderGeometry(0.04, 0.04, 0.45, 8), steel, 0, 3.38, 0);
-            const lampM = glow(0xd63031, 1.2); 
-            add(g, new T.SphereGeometry(0.13, 16, 12), lampM, 0, 3.7, 0);
 
+            // Antenna & Beacon
+            add(g, new T.CylinderGeometry(0.04, 0.04, 0.45, 8), steel, 0, 3.38, 0);
+            const lampM = glow(0xff3838, 1.8); 
+            add(g, new T.SphereGeometry(0.14, 16, 12), lampM, 0, 3.7, 0);
+
+            // Mechanical Springs & Hands (Bright silver coils + vibrant crimson punching gloves)
             const curve = new T.Curve(); 
             curve.getPoint = t => new T.Vector3(0.12 * Math.cos(t * 38), -t * 0.9, 0.12 * Math.sin(t * 38));
             const arms = [-1, 1].map(s => {
                 const p = new T.Group(); 
                 p.position.set(s * 1.07, 1.95, 0); 
                 g.add(p);
-                add(p, new T.TubeGeometry(curve, 120, 0.035, 6), steel); 
-                add(p, new T.SphereGeometry(0.2, 16, 12), red, 0, -0.98, 0); 
+                // Shoulder socket
+                add(p, new T.SphereGeometry(0.16, 16, 12), mustard, 0, 0, 0);
+                add(p, new T.TubeGeometry(curve, 120, 0.038, 8), steel); 
+                add(p, new T.SphereGeometry(0.22, 16, 12), red, 0, -0.98, 0); 
+                return p;
+            }); 
                 return p;
             });
 
@@ -177,11 +207,11 @@
 
         const scene = new T.Scene();
         const camera = new T.PerspectiveCamera(30, 1, 0.1, 100);
-        scene.add(new T.HemisphereLight(0xffffff, 0x8a93aa, 0.95));
-        const key = new T.DirectionalLight(0xffffff, 0.85); 
-        key.position.set(2, 4, 5); 
+        scene.add(new T.HemisphereLight(0xffffff, 0xb0c4de, 1.15));
+        const key = new T.DirectionalLight(0xffffff, 1.1); 
+        key.position.set(2.5, 4.5, 5); 
         scene.add(key);
-        const rim = new T.DirectionalLight(0x9bb4ff, 0.7); 
+        const rim = new T.DirectionalLight(0xffe6aa, 0.85); 
         rim.position.set(-4, 3, -3); 
         scene.add(rim);
 
