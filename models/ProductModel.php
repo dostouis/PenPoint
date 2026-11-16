@@ -199,6 +199,26 @@ class ProductModel {
                 'image_url' => 'assets/img/pencil.png',
                 'is_active' => 1,
                 'dispensed_count' => 29
+            ],
+            [
+                'id' => 6,
+                'slot_number' => 6,
+                'tier_number' => 4,
+                'mechanism_type' => 'paddle_push',
+                'name' => 'Panda Crystal Ballpen Red',
+                'category' => 'Pens',
+                'description' => 'Vibrant red ink ballpen with smooth glide tungsten ball tip for grading, checking, and highlighting.',
+                'best_used_for' => 'Paper checking, editorial corrections, grading quizzes & note annotations',
+                'specs' => '0.7mm Medium Point • Classic Clear Hexagonal Barrel • Vibrant Red Ink',
+                'price' => 10.00,
+                'stock' => 15,
+                'max_capacity' => 20,
+                'low_stock_threshold' => 4,
+                'sku' => 'PEN-PANDA-RED',
+                'badge' => 'Checking Pen',
+                'image_url' => 'assets/img/pen-red.png',
+                'is_active' => 1,
+                'dispensed_count' => 0
             ]
         ];
     }

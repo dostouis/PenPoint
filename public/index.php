@@ -2311,7 +2311,7 @@ foreach ($products as $p) {
                 3: 'Daily class essays, quick quizzes, laboratory worksheets & exercises.',
                 4: 'Quick lecture notes, daily classroom activities, quiz answers & signatures.',
                 5: 'Standardized exams, midterms, finals, OMR bubble sheets & drafting.',
-                6: 'Official university prelims, midterms, finals & formal exam booklets.'
+                6: 'Paper checking, editorial corrections, grading quizzes & note annotations.'
             };
             const defaultSpecs = {
                 1: '8.5 x 13 in (Long) • Substance 20 (75 GSM) • Pack of 5 Sheets',
@@ -2319,7 +2319,7 @@ foreach ($products as $p) {
                 3: '8.5 x 11 in (Letter) • Substance 20 • Pack of 5 Sheets',
                 4: '0.7mm Medium Point • Classic Clear Hexagonal Barrel • Black Ink',
                 5: 'Grade No. 2 Medium Graphite • High-Density Core • Built-in Eraser',
-                6: 'Official UMak Lined Leaflet • Pack of 2 Examination Booklets'
+                6: '0.7mm Medium Point • Classic Clear Hexagonal Barrel • Vibrant Red Ink'
             };
 
             const usageText = product.best_used_for || defaultUsage[product.slot_number] || 'General academic coursework & classroom requirements.';
