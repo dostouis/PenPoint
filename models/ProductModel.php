@@ -199,26 +199,6 @@ class ProductModel {
                 'image_url' => 'assets/img/pencil.png',
                 'is_active' => 1,
                 'dispensed_count' => 29
-            ],
-            [
-                'id' => 6,
-                'slot_number' => 6,
-                'tier_number' => 4,
-                'mechanism_type' => 'paddle_push',
-                'name' => 'Standard Blue Book (Pack of 2)',
-                'category' => 'Examination',
-                'description' => 'Official university examination booklet with lined answer leaves, paddle dispensed.',
-                'best_used_for' => 'Official university prelims, midterms, finals & formal examination booklets',
-                'specs' => 'Official UMak Lined Leaflet • Pack of 2 Examination Booklets',
-                'price' => 20.00,
-                'stock' => 16,
-                'max_capacity' => 25,
-                'low_stock_threshold' => 5,
-                'sku' => 'EXM-BLUE-BK',
-                'badge' => 'Paddle-Push',
-                'image_url' => 'assets/img/bluebook.png',
-                'is_active' => 1,
-                'dispensed_count' => 88
             ]
         ];
     }

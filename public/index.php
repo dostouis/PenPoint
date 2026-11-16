@@ -1845,9 +1845,11 @@ foreach ($products as $p) {
                 <button class="retro-chip" onclick="filterCategory('Pencils', this)">
                     <span class="retro-chip-indicator"></span> Exam Pencils (<?= $categoryCounts['Pencils'] ?>)
                 </button>
+                <?php if (!empty($categoryCounts['Examination'])): ?>
                 <button class="retro-chip" onclick="filterCategory('Examination', this)">
                     <span class="retro-chip-indicator"></span> Blue Books (<?= $categoryCounts['Examination'] ?>)
                 </button>
+                <?php endif; ?>
             </div>
             <button class="retro-nav-arrow" onclick="slideCategory(1)" aria-label="Slide Right">
                 <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
@@ -1861,7 +1863,7 @@ foreach ($products as $p) {
             <div class="inventory-title-group">
                 <h3 class="inventory-title-main">
                     <span>Available Vending Slots</span>
-                    <span class="inventory-count-tag" id="activeSlotsCountTag">6 SLOTS ACTIVE</span>
+                    <span class="inventory-count-tag" id="activeSlotsCountTag"><?= $totalCount ?> SLOTS ACTIVE</span>
                 </h3>
             </div>
             <div class="inventory-machine-tag">
@@ -2283,9 +2285,10 @@ foreach ($products as $p) {
                 }
             });
 
+            const totalSlots = <?= (int)$totalCount ?>;
             const countTag = document.getElementById('activeSlotsCountTag');
             if (countTag) {
-                countTag.innerText = cat === 'All' ? '6 SLOTS ACTIVE' : `${visibleCount} IN ${cat.toUpperCase()}`;
+                countTag.innerText = cat === 'All' ? `${totalSlots} SLOTS ACTIVE` : `${visibleCount} IN ${cat.toUpperCase()}`;
             }
         }
 
