@@ -768,11 +768,11 @@ if ($logsRes) {
 
                 <div class="date-input-wrap">
                     <i data-lucide="calendar" class="date-input-icon"></i>
-                    <input type="text" name="date_from" id="date_from" class="filter-input retro-datepicker" placeholder="From Date" value="<?= htmlspecialchars($date_from) ?>" autocomplete="off">
+                    <input type="text" name="date_from" id="date_from" class="filter-input retro-datepicker" placeholder="From Date" value="<?= htmlspecialchars($date_from) ?>" autocomplete="off" readonly>
                 </div>
                 <div class="date-input-wrap">
                     <i data-lucide="calendar" class="date-input-icon"></i>
-                    <input type="text" name="date_to" id="date_to" class="filter-input retro-datepicker" placeholder="To Date" value="<?= htmlspecialchars($date_to) ?>" autocomplete="off">
+                    <input type="text" name="date_to" id="date_to" class="filter-input retro-datepicker" placeholder="To Date" value="<?= htmlspecialchars($date_to) ?>" autocomplete="off" readonly>
                 </div>
 
                 <button type="submit" class="btn-filter">
@@ -913,7 +913,7 @@ if ($logsRes) {
         if (typeof flatpickr !== 'undefined') {
             flatpickr(".retro-datepicker", {
                 dateFormat: "Y-m-d",
-                allowInput: true,
+                allowInput: false,
                 disableMobile: true
             });
         }
