@@ -61,7 +61,7 @@ class ActivityLogModel {
             $sql .= " AND a.idcard = '" . $this->conn->real_escape_string($idcard) . "'";
         }
         
-        $sql .= " ORDER BY a.created_at DESC LIMIT " . intval($limit) . " OFFSET " . intval($offset);
+        $sql .= " ORDER BY a.created_at DESC, a.id DESC LIMIT " . intval($limit) . " OFFSET " . intval($offset);
         
         $result = $this->conn->query($sql);
         $logs = [];

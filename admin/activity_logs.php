@@ -72,7 +72,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     $output = fopen('php://output', 'w');
     fputcsv($output, ['ID', 'Log Type', 'Machine ID', 'Actor / Operator', 'Details', 'IP Address', 'Date & Time']);
 
-    $expSQL = "SELECT * FROM activity_logs {$whereSQL} ORDER BY created_at DESC";
+    $expSQL = "SELECT * FROM activity_logs {$whereSQL} ORDER BY created_at DESC, id DESC";
     $expRes = $conn->query($expSQL);
     if ($expRes) {
         while ($r = $expRes->fetch_assoc()) {
@@ -111,7 +111,7 @@ $logsSQL = "
     SELECT * 
     FROM activity_logs 
     {$whereSQL} 
-    ORDER BY created_at DESC 
+    ORDER BY created_at DESC, id DESC 
     LIMIT {$limit} OFFSET {$offset}
 ";
 $logsRes = $conn->query($logsSQL);

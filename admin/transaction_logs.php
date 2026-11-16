@@ -77,7 +77,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     $output = fopen('php://output', 'w');
     fputcsv($output, ['ID', 'Reference No', 'Transaction Key', 'Machine ID', 'Slot', 'Item Name', 'Amount (PHP)', 'Payment Method', 'IR Break-Beam Verified', 'Dispense Status', 'Date & Time']);
 
-    $exportSQL = "SELECT * FROM transactions t {$whereSQL} ORDER BY t.created_at DESC";
+    $exportSQL = "SELECT * FROM transactions t {$whereSQL} ORDER BY t.created_at DESC, t.id DESC";
     $expRes = $conn->query($exportSQL);
     if ($expRes) {
         while ($r = $expRes->fetch_assoc()) {
@@ -127,7 +127,7 @@ $listSQL = "
     SELECT t.* 
     FROM transactions t 
     {$whereSQL} 
-    ORDER BY t.created_at DESC 
+    ORDER BY t.created_at DESC, t.id DESC 
     LIMIT {$limit} OFFSET {$offset}
 ";
 $listRes = $conn->query($listSQL);
