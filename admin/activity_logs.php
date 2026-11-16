@@ -538,26 +538,48 @@ if ($logsRes) {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
         }
 
         .page-btn {
-            background: #181d27;
-            border: 1px solid #333a4c;
-            color: var(--retro-cream);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.78rem;
+            background: #1c212e;
+            border: 2px solid #323b4f;
+            box-shadow: 0 3px 0 #12151b;
+            color: var(--retro-cream-muted);
+            min-width: 38px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
             text-decoration: none;
-            font-family: var(--font-mono);
+            font-family: var(--font-body);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        .page-btn:hover:not(.active) {
+            background: #283042;
+            color: var(--retro-cream);
+            border-color: #44516c;
+        }
+
+        .page-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #12151b;
         }
 
         .page-btn.active {
-            background: #ffeaa7;
+            background: var(--retro-cream);
             color: #12151b;
-            font-weight: 800;
             border-color: #ffffff;
+            box-shadow: 0 3px 0 #95a5a6, 0 4px 10px rgba(0, 0, 0, 0.3);
+            font-weight: 900;
         }
 
         @media (max-width: 480px) {
