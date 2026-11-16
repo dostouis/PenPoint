@@ -156,8 +156,12 @@
             add(g, new T.SphereGeometry(0.14, 16, 12), lampM, 0, 3.7, 0);
 
             // Mechanical Springs & Hands (Bright silver coils + vibrant crimson punching gloves)
-            const curve = new T.Curve(); 
-            curve.getPoint = t => new T.Vector3(0.12 * Math.cos(t * 38), -t * 0.9, 0.12 * Math.sin(t * 38));
+            class SpringCurve extends T.Curve {
+                getPoint(t) {
+                    return new T.Vector3(0.12 * Math.cos(t * 38), -t * 0.9, 0.12 * Math.sin(t * 38));
+                }
+            }
+            const curve = new SpringCurve();
             const arms = [-1, 1].map(s => {
                 const p = new T.Group(); 
                 p.position.set(s * 1.07, 1.95, 0); 
@@ -166,8 +170,6 @@
                 add(p, new T.SphereGeometry(0.16, 16, 12), mustard, 0, 0, 0);
                 add(p, new T.TubeGeometry(curve, 120, 0.038, 8), steel); 
                 add(p, new T.SphereGeometry(0.22, 16, 12), red, 0, -0.98, 0); 
-                return p;
-            }); 
                 return p;
             });
 
