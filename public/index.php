@@ -42,10 +42,15 @@ foreach ($products as $p) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- html2canvas for Receipt Download -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Local Libraries (Full Offline Support) with CDN Fallback -->
+    <script src="assets/js/lucide.min.js"></script>
+    <script>if (typeof lucide === 'undefined') document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');</script>
+    <script src="assets/js/html2canvas.min.js"></script>
+    <script>if (typeof html2canvas === 'undefined') document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>');</script>
+    <!-- Three.js & Vendo 3D Mascot -->
+    <script src="assets/js/three.min.js"></script>
+    <script>if (typeof THREE === 'undefined') document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
+    <script src="assets/js/vendo-mascot.js"></script>
     <style>
         :root {
             --retro-bg: #151821;
@@ -383,6 +388,141 @@ foreach ($products as $p) {
             padding: 16px 20px;
             box-shadow: 0 8px 0 #12151b, 0 16px 30px rgba(0, 0, 0, 0.6);
             position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 230px;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .retro-hero-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* 3D Mascot Vendo Stage */
+        .mascot-bay {
+            position: relative;
+            width: 100%;
+            height: 230px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #232938 0%, #181d27 100%);
+            border: 2px solid #333b4e;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            cursor: pointer;
+            touch-action: manipulation;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mascot-bay::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 14%;
+            background: #11141c;
+            border-top: 2px solid #333b4e;
+            pointer-events: none;
+        }
+
+        .mascot-bay::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px);
+        }
+
+        .mascot-bay canvas {
+            position: relative;
+            z-index: 1;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mascot-hud-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 5;
+            background: rgba(18, 21, 27, 0.88);
+            border: 1px solid #3a445b;
+            border-radius: 5px;
+            padding: 2px 7px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: #ffeaa7;
+            letter-spacing: 0.04em;
+            pointer-events: none;
+        }
+
+        .mascot-hud-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #2ecc71;
+            box-shadow: 0 0 5px #2ecc71;
+        }
+
+        .mascot-hi-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            z-index: 5;
+            background: rgba(33, 38, 52, 0.9);
+            border: 1.5px solid #4a5570;
+            color: var(--retro-cream);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #12151b;
+            transition: all 0.12s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mascot-hi-btn:hover {
+            background: var(--retro-red);
+            border-color: #ffffff;
+        }
+
+        .mascot-hi-btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        .pop-vendo {
+            position: absolute;
+            z-index: 6;
+            top: 15%;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: var(--retro-red);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            font: 700 0.85rem 'Noto Sans JP', sans-serif;
+            pointer-events: none;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+            animation: popVendo 0.85s ease-out forwards;
+        }
+
+        @keyframes popVendo {
+            from { opacity: 1; transform: translateY(0) scale(0.9); }
+            to { opacity: 0; transform: translateY(-30px) scale(1.05); }
         }
 
         .retro-hero-header {
@@ -1629,8 +1769,15 @@ foreach ($products as $p) {
             }
 
             .retro-vending-frame {
+                grid-template-columns: 1fr;
+                gap: 14px;
                 padding: 14px 14px 12px;
                 border-radius: 14px;
+            }
+
+            .mascot-bay {
+                height: 190px;
+                order: -1;
             }
 
             .retro-hero-title {
@@ -1783,45 +1930,58 @@ foreach ($products as $p) {
         </div>
     </div>
 
-    <!-- Retro Machine Guide Panel -->
+    <!-- Retro Machine Guide Panel & 3D Mascot -->
     <div class="retro-hero-wrapper">
         <div class="retro-vending-frame">
-            <div class="retro-hero-header">
-                <h2 class="retro-hero-title">Need school supplies before your quiz?</h2>
-                <div class="retro-hero-tag">INSTANT VEND</div>
+            <div class="retro-hero-content">
+                <div class="retro-hero-header">
+                    <h2 class="retro-hero-title">Need school supplies before your quiz?</h2>
+                    <div class="retro-hero-tag">INSTANT VEND</div>
+                </div>
+                <p class="retro-hero-desc">
+                    Don't run to the distant bookstore! Tap your essential supply, scan GCash or Maya QR, and the mechanical motor dispenses your item verified by dual IR drop sensors.
+                </p>
+                <div class="retro-steps-row">
+                    <div class="retro-step-card">
+                        <div class="step-kanji-num">1</div>
+                        <div class="step-info-col">
+                            <span class="step-label-jp">STEP 01</span>
+                            <span class="step-label-en">Select Item</span>
+                        </div>
+                    </div>
+                    <div class="retro-step-card">
+                        <div class="step-kanji-num">2</div>
+                        <div class="step-info-col">
+                            <span class="step-label-jp">STEP 02</span>
+                            <span class="step-label-en">Scan QR</span>
+                        </div>
+                    </div>
+                    <div class="retro-step-card">
+                        <div class="step-kanji-num">3</div>
+                        <div class="step-info-col">
+                            <span class="step-label-jp">STEP 03</span>
+                            <span class="step-label-en">Motor Dispenses</span>
+                        </div>
+                    </div>
+                    <div class="retro-step-card">
+                        <div class="step-kanji-num">4</div>
+                        <div class="step-info-col">
+                            <span class="step-label-jp">STEP 04</span>
+                            <span class="step-label-en">IR Confirmed</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p class="retro-hero-desc">
-                Don't run to the distant bookstore! Tap your essential supply, scan GCash or Maya QR, and the mechanical motor dispenses your item verified by dual IR drop sensors.
-            </p>
-            <div class="retro-steps-row">
-                <div class="retro-step-card">
-                    <div class="step-kanji-num">1</div>
-                    <div class="step-info-col">
-                        <span class="step-label-jp">STEP 01</span>
-                        <span class="step-label-en">Select Item</span>
-                    </div>
+
+            <!-- Vendo the Mascot 3D Stage -->
+            <div class="mascot-bay" id="vendoMascotStage" role="img" aria-label="Vendo the PenPoint 3D mascot buddy">
+                <div class="mascot-hud-tag">
+                    <span class="mascot-hud-dot"></span>
+                    <span>VENDO • AI BUDDY</span>
                 </div>
-                <div class="retro-step-card">
-                    <div class="step-kanji-num">2</div>
-                    <div class="step-info-col">
-                        <span class="step-label-jp">STEP 02</span>
-                        <span class="step-label-en">Scan QR</span>
-                    </div>
-                </div>
-                <div class="retro-step-card">
-                    <div class="step-kanji-num">3</div>
-                    <div class="step-info-col">
-                        <span class="step-label-jp">STEP 03</span>
-                        <span class="step-label-en">Motor Dispenses</span>
-                    </div>
-                </div>
-                <div class="retro-step-card">
-                    <div class="step-kanji-num">4</div>
-                    <div class="step-info-col">
-                        <span class="step-label-jp">STEP 04</span>
-                        <span class="step-label-en">IR Confirmed</span>
-                    </div>
-                </div>
+                <button type="button" class="mascot-hi-btn" id="vendoSayHiBtn" title="Wave to Vendo">
+                    <span>Wave</span> 👋
+                </button>
             </div>
         </div>
     </div>
@@ -2520,6 +2680,13 @@ foreach ($products as $p) {
             document.getElementById('dispenseOverlay').classList.remove('active');
             window.location.reload();
         }
+
+        // Initialize 3D Mascot Vendo
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initVendoMascot === 'function') {
+                initVendoMascot('vendoMascotStage', 'vendoSayHiBtn');
+            }
+        });
     </script>
     <style>
         @keyframes retroSpin {

@@ -83,10 +83,12 @@ if (empty($catLabels)) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Local Offline Libraries with CDN Fallback -->
+    <script src="../public/assets/js/lucide.min.js"></script>
+    <script>if (typeof lucide === 'undefined') document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');</script>
     <!-- Chart.js for Visual Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="../public/assets/js/chart.umd.min.js"></script>
+    <script>if (typeof Chart === 'undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>');</script>
     <style>
         :root {
             --retro-bg: #151821;

@@ -133,12 +133,14 @@ if ($logsRes) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Dela+Gothic+One&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Local Offline Libraries with CDN Fallback -->
+    <script src="../public/assets/js/lucide.min.js"></script>
+    <script>if (typeof lucide === 'undefined') document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');</script>
     <!-- Flatpickr Datepicker & Custom Retro Theme -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="../public/css/flatpickr.min.css">
     <link rel="stylesheet" href="../public/css/retro-calendar.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="../public/assets/js/flatpickr.min.js"></script>
+    <script>if (typeof flatpickr === 'undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/flatpickr"><\/script>');</script>
     <style>
         :root {
             --retro-bg: #151821;
