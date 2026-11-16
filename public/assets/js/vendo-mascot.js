@@ -206,7 +206,7 @@
             const h = stageEl.clientHeight || 280;
             renderer.setSize(w, h, false);
             camera.aspect = w / h;
-            camera.position.set(0, 2.3, Math.max(9, 7 / camera.aspect));
+            camera.position.set(0, 2.05, Math.max(8.2, 6.4 / camera.aspect));
             camera.lookAt(0, 1.7, 0);
             camera.updateProjectionMatrix();
         }
@@ -240,7 +240,11 @@
             setTimeout(() => p.remove(), 850);
         });
 
-        if (!reduce) setTimeout(greet, 900);
+        if (!reduce) {
+            setTimeout(greet, 900);
+            // Automatically wave every 10 seconds
+            setInterval(greet, 10000);
+        }
 
         const clock = new T.Clock();
         renderer.setAnimationLoop(() => {

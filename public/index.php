@@ -405,38 +405,13 @@ foreach ($products as $p) {
             position: relative;
             width: 100%;
             height: 230px;
-            border-radius: 12px;
-            background: linear-gradient(180deg, #232938 0%, #181d27 100%);
-            border: 2px solid #333b4e;
-            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.4);
-            overflow: hidden;
+            overflow: visible;
             cursor: pointer;
             touch-action: manipulation;
             user-select: none;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .mascot-bay::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 14%;
-            background: #11141c;
-            border-top: 2px solid #333b4e;
-            pointer-events: none;
-        }
-
-        .mascot-bay::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 4px);
         }
 
         .mascot-bay canvas {
@@ -449,13 +424,14 @@ foreach ($products as $p) {
 
         .mascot-hud-tag {
             position: absolute;
-            top: 8px;
-            left: 8px;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 5;
             background: rgba(18, 21, 27, 0.88);
             border: 1px solid #3a445b;
             border-radius: 5px;
-            padding: 2px 7px;
+            padding: 2px 8px;
             display: flex;
             align-items: center;
             gap: 5px;
@@ -464,6 +440,7 @@ foreach ($products as $p) {
             color: #ffeaa7;
             letter-spacing: 0.04em;
             pointer-events: none;
+            white-space: nowrap;
         }
 
         .mascot-hud-dot {
@@ -472,37 +449,6 @@ foreach ($products as $p) {
             border-radius: 50%;
             background: #2ecc71;
             box-shadow: 0 0 5px #2ecc71;
-        }
-
-        .mascot-hi-btn {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            z-index: 5;
-            background: rgba(33, 38, 52, 0.9);
-            border: 1.5px solid #4a5570;
-            color: var(--retro-cream);
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 2px 0 #12151b;
-            transition: all 0.12s ease;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .mascot-hi-btn:hover {
-            background: var(--retro-red);
-            border-color: #ffffff;
-        }
-
-        .mascot-hi-btn:active {
-            transform: translateY(1px);
-            box-shadow: none;
         }
 
         .pop-vendo {
@@ -1973,15 +1919,12 @@ foreach ($products as $p) {
                 </div>
             </div>
 
-            <!-- Vendo the Mascot 3D Stage -->
+            <!-- Vendo the Mascot 3D Stage (Seamless, No Box Container) -->
             <div class="mascot-bay" id="vendoMascotStage" role="img" aria-label="Vendo the PenPoint 3D mascot buddy">
                 <div class="mascot-hud-tag">
                     <span class="mascot-hud-dot"></span>
                     <span>VENDO • AI BUDDY</span>
                 </div>
-                <button type="button" class="mascot-hi-btn" id="vendoSayHiBtn" title="Wave to Vendo">
-                    <span>Wave</span> 👋
-                </button>
             </div>
         </div>
     </div>
@@ -2684,7 +2627,7 @@ foreach ($products as $p) {
         // Initialize 3D Mascot Vendo
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof initVendoMascot === 'function') {
-                initVendoMascot('vendoMascotStage', 'vendoSayHiBtn');
+                initVendoMascot('vendoMascotStage');
             }
         });
     </script>
