@@ -728,17 +728,17 @@ if ($listRes) {
             </div>
 
             <!-- Filter Controls -->
-            <form method="GET" action="transaction_logs.php" class="filter-bar">
-                <input type="text" name="search" class="filter-input" placeholder="Search Ref, Item, Key..." value="<?= htmlspecialchars($search) ?>" style="flex: 1; min-width: 180px;">
+            <form method="GET" action="transaction_logs.php" id="filterForm" class="filter-bar">
+                <input type="text" name="search" id="searchInput" class="filter-input" placeholder="Search Ref, Item, Key..." value="<?= htmlspecialchars($search) ?>" style="flex: 1; min-width: 180px;">
 
-                <select name="status" class="filter-select">
+                <select name="status" id="statusSelect" class="filter-select">
                     <option value="">All Statuses</option>
                     <option value="SUCCESS" <?= $status === 'SUCCESS' ? 'selected' : '' ?>>SUCCESS</option>
                     <option value="REFUND_PENDING" <?= $status === 'REFUND_PENDING' ? 'selected' : '' ?>>REFUND_PENDING</option>
                     <option value="REFUNDED" <?= $status === 'REFUNDED' ? 'selected' : '' ?>>REFUNDED</option>
                 </select>
 
-                <select name="slot" class="filter-select">
+                <select name="slot" id="slotSelect" class="filter-select">
                     <option value="">All Slots</option>
                     <?php for ($s = 1; $s <= 6; $s++): ?>
                         <option value="<?= $s ?>" <?= (string)$slot === (string)$s ? 'selected' : '' ?>>Slot #<?= $s ?></option>
@@ -754,9 +754,6 @@ if ($listRes) {
                     <input type="text" name="date_to" id="date_to" class="filter-input retro-datepicker" placeholder="To Date" value="<?= htmlspecialchars($date_to) ?>" autocomplete="off" readonly>
                 </div>
 
-                <button type="submit" class="btn-filter">
-                    <i data-lucide="filter" style="width: 13px; height: 13px;"></i> Filter
-                </button>
                 <?php if ($search || $status || $slot !== '' || $date_from || $date_to): ?>
                     <a href="transaction_logs.php" class="btn-filter" style="background: transparent; border-color: #555;">Clear</a>
                 <?php endif; ?>
@@ -909,11 +906,39 @@ if ($listRes) {
     <script>
         lucide.createIcons();
 
+        const filterForm = document.getElementById('filterForm');
+
         if (typeof flatpickr !== 'undefined') {
             flatpickr(".retro-datepicker", {
                 dateFormat: "Y-m-d",
                 allowInput: false,
-                disableMobile: true
+                disableMobile: true,
+                onChange: function() {
+                    if (filterForm) filterForm.submit();
+                }
+            });
+        }
+
+        // Auto submit on dropdown change
+        const statusSelect = document.getElementById('statusSelect');
+        const slotSelect = document.getElementById('slotSelect');
+        [statusSelect, slotSelect].forEach(function(el) {
+            if (el && filterForm) {
+                el.addEventListener('change', function() {
+                    filterForm.submit();
+                });
+            }
+        });
+
+        // Debounced auto submit on search typing
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput && filterForm) {
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    filterForm.submit();
+                }, 500);
             });
         }
 

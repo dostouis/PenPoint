@@ -754,10 +754,10 @@ if ($logsRes) {
             </div>
 
             <!-- Filter Controls -->
-            <form method="GET" action="activity_logs.php" class="filter-bar">
-                <input type="text" name="search" class="filter-input" placeholder="Search details, actor, machine..." value="<?= htmlspecialchars($search) ?>" style="flex: 1; min-width: 180px;">
+            <form method="GET" action="activity_logs.php" id="filterForm" class="filter-bar">
+                <input type="text" name="search" id="searchInput" class="filter-input" placeholder="Search details, actor, machine..." value="<?= htmlspecialchars($search) ?>" style="flex: 1; min-width: 180px;">
 
-                <select name="type" class="filter-select">
+                <select name="type" id="typeSelect" class="filter-select">
                     <option value="">All Event Types</option>
                     <?php foreach ($typeList as $tl): ?>
                         <option value="<?= htmlspecialchars($tl) ?>" <?= $type === $tl ? 'selected' : '' ?>>
@@ -775,9 +775,6 @@ if ($logsRes) {
                     <input type="text" name="date_to" id="date_to" class="filter-input retro-datepicker" placeholder="To Date" value="<?= htmlspecialchars($date_to) ?>" autocomplete="off" readonly>
                 </div>
 
-                <button type="submit" class="btn-filter">
-                    <i data-lucide="filter" style="width: 13px; height: 13px;"></i> Filter
-                </button>
                 <?php if ($search || $type || $date_from || $date_to): ?>
                     <a href="activity_logs.php" class="btn-filter" style="background: transparent; border-color: #555;">Clear</a>
                 <?php endif; ?>
@@ -910,11 +907,36 @@ if ($logsRes) {
     <script>
         lucide.createIcons();
 
+        const filterForm = document.getElementById('filterForm');
+
         if (typeof flatpickr !== 'undefined') {
             flatpickr(".retro-datepicker", {
                 dateFormat: "Y-m-d",
                 allowInput: false,
-                disableMobile: true
+                disableMobile: true,
+                onChange: function() {
+                    if (filterForm) filterForm.submit();
+                }
+            });
+        }
+
+        // Auto submit on dropdown change
+        const typeSelect = document.getElementById('typeSelect');
+        if (typeSelect && filterForm) {
+            typeSelect.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
+
+        // Debounced auto submit on search typing
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput && filterForm) {
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    filterForm.submit();
+                }, 500);
             });
         }
     </script>
