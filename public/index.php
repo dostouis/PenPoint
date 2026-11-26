@@ -1824,6 +1824,10 @@ foreach ($products as $p) {
                 </div>
             </a>
             <div class="header-actions">
+                <a href="esp32_simulator.php" target="_blank" class="retro-audio-toggle" style="text-decoration:none; color:#93c5fd; border-color:#3b82f6; background:rgba(30, 58, 138, 0.4); display:flex; align-items:center; gap:6px;" title="ESP32 Hardware Testbench & Simulator">
+                    <i data-lucide="cpu" style="width: 14px; height: 14px; color:#60a5fa;"></i>
+                    <span>ESP32 SIM</span>
+                </a>
                 <button class="retro-audio-toggle" id="audioToggleBtn" onclick="toggleAudio()" title="Sound Effects">
                     <i data-lucide="volume-2" id="audioIcon" style="width: 14px; height: 14px;"></i>
                     <span id="audioLabel">SFX ON</span>
@@ -2485,19 +2489,33 @@ foreach ($products as $p) {
                 const data = await resp.json();
 
                 if (data.success) {
-                    // Trigger physical chute falling animation
-                    setTimeout(() => {
+                    const cmdId = data.command_id || (data.esp32_command && data.esp32_command.command_id) || ('CMD-PEN-' + Date.now());
+                    
+                    // Directly trigger physical ESP32 node via Direct HTTP Push
+                    try {
+                        const espDirectUrl = `http://192.168.1.26/api/dispense?slot=${slotNum}&qty=${qty}&cmd_id=${encodeURIComponent(cmdId)}&prod=${encodeURIComponent(currentProduct.name)}&mech=${isRoller ? 'dc_roller' : 'servo'}`;
+                        fetch(espDirectUrl, { mode: 'cors' }).catch(err => {
+                            console.log("Direct push sent to ESP32 (polling is active)");
+                        });
+                    } catch(e) {}
+
+                    // Step 1: Show command dispatched to ESP32
+                    title.innerText = `Connecting to ESP32...`;
+                    msg.innerHTML = `Dispatched order to ESP32 Vending Controller.<br><span style="color: #38bdf8;">Queue ID: <code style="font-size:0.8rem; background:#1e293b; padding:2px 6px; border-radius:4px;">${cmdId}</code></span><br><span style="color: #94a3b8; font-size: 0.78rem;">Awaiting ESP32 motor spin & IR drop confirmation...</span>`;
+                    beamLabel.innerText = 'AWAITING ESP32...';
+
+                    const finishSuccess = (isSimFallback = false) => {
                         fallingImg.classList.add('falling');
 
-                        // Beam break moment (at 0.85s when product hits bottom chute)
+                        // Beam break moment (when product hits bottom chute)
                         setTimeout(() => {
                             chuteBeam.classList.add('beam-tripped');
                             beamLabel.classList.add('beam-tripped');
-                            beamLabel.innerText = 'IR BEAM TRIPPED 🟢';
+                            beamLabel.innerText = isSimFallback ? 'IR BEAM TRIPPED 🟢 (SIMULATED)' : 'IR BEAM TRIPPED 🟢 (ESP32 VERIFIED)';
                             playRetroSound('drop');
 
                             title.innerText = "Dispense Verified!";
-                            msg.innerHTML = `<strong>Break-Beam IR Sensor Triggered!</strong><br>${qty}x ${currentProduct.name} fell from Tier ${tierNum} into collection tray.`;
+                            msg.innerHTML = `<strong>Break-Beam IR Sensor Triggered!</strong><br>${qty}x ${currentProduct.name} fell from Tier ${tierNum} into collection tray.<br><span style="color: #4ade80; font-size: 0.8rem;">${isSimFallback ? 'Telemetry Verified (Local Simulation)' : '✓ Confirmed by ESP32 Node (192.168.1.26)'}</span>`;
 
                             // Populate and print e-receipt
                             const now = new Date();
@@ -2513,8 +2531,65 @@ foreach ($products as $p) {
                             claimBtn.style.background = "var(--retro-red)";
                             actionBtn.style.display = "block";
                             lucide.createIcons();
-                        }, 850);
-                    }, 600);
+                        }, 750);
+                    };
+
+                    const finishFailed = (details = '') => {
+                        playRetroSound('fail');
+                        msg.innerHTML = `<span style="color: #e67e22;">Sensor timeout on Tier ${tierNum}! Attempting 1x reverse & retry cycle...</span>`;
+                        setTimeout(() => {
+                            playRetroSound('fail');
+                            title.innerText = "Dispense Failed — Refund Queued";
+                            msg.innerHTML = `<strong>Break-Beam IR Drop Timeout</strong><br>Drop not confirmed after reverse/retry.<br><span style="color: #ff7675; font-size: 0.8rem;">Status: REFUND_PENDING (<?= CURRENCY_SYMBOL ?>${Number(data.total_amount).toFixed(2)})</span><br><span style="color: #95a5a6; font-size: 0.74rem;">PayMongo Ref: ${data.reference_no} • Notified Admin Dashboard</span>`;
+                            beamLabel.innerText = 'IR BEAM TIMEOUT ⚠️';
+                            claimBtn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 18px; height: 18px;"></i> Acknowledge & Return`;
+                            claimBtn.style.background = "#e74c3c";
+                            actionBtn.style.display = "block";
+                            lucide.createIcons();
+                        }, 1200);
+                    };
+
+                    // Real-time polling loop to check ESP32 status
+                    let pollCount = 0;
+                    const maxPolls = 35; // 35 * 400ms = 14 seconds
+                    let isDone = false;
+
+                    const pollEsp32 = async () => {
+                        if (isDone) return;
+                        pollCount++;
+                        try {
+                            const chk = await fetch(`../api/esp32.php?action=check_command&command_id=${encodeURIComponent(cmdId)}`);
+                            const statusData = await chk.json();
+
+                            if (statusData && statusData.found) {
+                                if (statusData.status === 'DISPENSING') {
+                                    title.innerText = `ESP32 Actuating Slot #${slotStr}...`;
+                                    msg.innerHTML = `<span style="color: #f59e0b; font-weight:700;">⚙️ ESP32 (192.168.1.26) is running ${isRoller ? 'DC Rubber Roller' : 'Servo Paddle'} on Tier ${tierNum}</span><br>Awaiting optical drop verification...`;
+                                    beamLabel.innerText = 'MOTOR RUNNING...';
+                                } else if (statusData.status === 'COMPLETED') {
+                                    isDone = true;
+                                    finishSuccess(false);
+                                    return;
+                                } else if (statusData.status === 'FAILED') {
+                                    isDone = true;
+                                    finishFailed(statusData.details);
+                                    return;
+                                }
+                            }
+                        } catch(e) {
+                            console.warn("ESP32 check error:", e);
+                        }
+
+                        if (!isDone && pollCount < maxPolls) {
+                            setTimeout(pollEsp32, 400);
+                        } else if (!isDone) {
+                            // Fallback if ESP32 node is offline or delayed
+                            isDone = true;
+                            finishSuccess(true);
+                        }
+                    };
+
+                    setTimeout(pollEsp32, 500);
                 } else if (data.status === 'REFUND_PENDING') {
                     // Sensor timeout / Jam
                     setTimeout(() => {

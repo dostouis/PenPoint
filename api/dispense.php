@@ -22,6 +22,7 @@ require_once __DIR__ . '/../models/ProductModel.php';
 require_once __DIR__ . '/../models/MachineModel.php';
 require_once __DIR__ . '/../models/ActivityLogModel.php';
 require_once __DIR__ . '/../models/TransactionModel.php';
+require_once __DIR__ . '/../models/DispenseQueueModel.php';
 
 $action = trim($_REQUEST['action'] ?? 'dispense');
 $slot = intval($_REQUEST['slot'] ?? $_REQUEST['slot_number'] ?? 0);
@@ -36,6 +37,7 @@ $productModel = new ProductModel();
 $machineModel = new MachineModel();
 $logModel = new ActivityLogModel();
 $txnModel = new TransactionModel();
+$queueModel = new DispenseQueueModel();
 
 switch ($action) {
     case 'order':
@@ -106,6 +108,37 @@ switch ($action) {
         $status = 'VERIFIED';
         $ir_verified = 1;
 
+        // Pin & Mechanism mapping for official ESP32 hardware schematic:
+        // Top Tier (Slots 1-3): Dual-Servo Escapement (S1:13+18, S2:19+21, S3:22+2)
+        // Bottom Tier (Slots 5-6): TB6612 DC Paper Rollers (M1:25, M2:14)
+        $isDcRoller = ($slot == 5 || $slot == 6 || $mechanism === 'dc_roller' || $mechanism === 'motor');
+        $pinMap = [
+            1 => 13, // Slot 1 Front Servo (Rear on GPIO 18)
+            2 => 19, // Slot 2 Front Servo (Rear on GPIO 21)
+            3 => 22, // Slot 3 Front Servo (Rear on GPIO 2)
+            4 => 4,  // Slot 4 Aux
+            5 => 25, // Slot 5 TB6612 Motor 1 (Short Paper)
+            6 => 14  // Slot 6 TB6612 Motor 2 (A4 Paper)
+        ];
+        $pinUsed = $pinMap[$slot] ?? 13;
+        $hardwareMech = $isDcRoller ? 'dc_roller' : 'escapement_servo';
+
+        // Enqueue command for ESP32 / Simulator to pick up
+        $cmd_key = "CMD-" . $machine_id . "-" . time() . "-" . rand(100, 999);
+        $queueItem = $queueModel->enqueue(
+            $machine_id, $slot, $product['name'], $quantity, 
+            $hardwareMech, $tier, $pinUsed, $product['id'], $cmd_key
+        );
+
+        // Immediate Direct HTTP Push to real ESP32 Hardware (Port 80)
+        $espIp = defined('DEFAULT_ESP32_IP') ? DEFAULT_ESP32_IP : '192.168.1.26';
+        $directCh = curl_init("http://{$espIp}/api/dispense?slot={$slot}&qty={$quantity}&cmd_id=" . urlencode($cmd_key) . "&mech={$hardwareMech}&prod=" . urlencode($product['name']));
+        curl_setopt($directCh, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($directCh, CURLOPT_TIMEOUT_MS, 1500);
+        curl_setopt($directCh, CURLOPT_CONNECTTIMEOUT_MS, 400);
+        @curl_exec($directCh);
+        curl_close($directCh);
+
         // Log transaction to DB
         $txnModel->logDispense(
             $machine_id, $txn_key, $idcard, 
@@ -137,8 +170,9 @@ switch ($action) {
 
         echo json_encode([
             'success' => true,
-            'status' => 'VERIFIED',
-            'message' => "Dispense successful! Tier {$tier} IR break-beam sensor confirmed delivery.",
+            'status' => 'QUEUED',
+            'command_id' => $cmd_key,
+            'message' => "Dispense initiated! Enqueued to ESP32 vending controller for Slot #{$slot}.",
             'transaction_key' => $txn_key,
             'reference_no' => $reference,
             'slot_number' => $slot,
@@ -153,6 +187,7 @@ switch ($action) {
                 'remaining_stock' => max(0, $product['stock'] - $quantity)
             ],
             'esp32_command' => [
+                'command_id' => $cmd_key,
                 'cmd' => 'DISPENSE',
                 'slot' => $slot,
                 'tier' => $tier,

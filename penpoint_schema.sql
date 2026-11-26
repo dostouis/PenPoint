@@ -135,4 +135,28 @@ INSERT INTO `activity_logs` (`log_type`, `idcard`, `machine_id`, `details`, `poi
 ('dispense', '3474741991', 'PEN-01', 'Servo actuated slot #6. IR sensor confirmed product dropped into tray.', 0, DATE_SUB(NOW(), INTERVAL 12 MINUTE)),
 ('verification', '3474741991', 'PEN-01', 'Dispense verified successfully by IR sensor.', 0, DATE_SUB(NOW(), INTERVAL 12 MINUTE));
 
+-- --------------------------------------------------------
+-- Table structure for table `dispense_queue` (ESP32 hardware commands)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `dispense_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `command_id` varchar(100) NOT NULL UNIQUE,
+  `machine_id` varchar(50) NOT NULL DEFAULT 'PEN-01',
+  `slot_number` int(11) NOT NULL,
+  `product_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `mechanism` varchar(50) DEFAULT 'servo_paddle',
+  `tier_number` int(11) DEFAULT 1,
+  `pin_used` int(11) DEFAULT 13,
+  `status` enum('PENDING','DISPENSING','VERIFIED','COMPLETED','FAILED','TIMEOUT') DEFAULT 'PENDING',
+  `ir_verified` tinyint(1) DEFAULT 0,
+  `details` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `status_idx` (`status`),
+  KEY `machine_idx` (`machine_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;

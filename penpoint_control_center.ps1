@@ -176,29 +176,42 @@ $groupPublic.Controls.Add($btnOpenPublicAdmin)
 # -------------------------------------------------------------
 # Button 4: Local Student Kiosk
 $btnOpenKiosk = New-Object System.Windows.Forms.Button
-$btnOpenKiosk.Text = "Local Student Kiosk (127.0.0.1:8000)"
-$btnOpenKiosk.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
+$btnOpenKiosk.Text = "Student Kiosk"
+$btnOpenKiosk.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $btnOpenKiosk.BackColor = [System.Drawing.Color]::FromArgb(33, 38, 52)
 $btnOpenKiosk.ForeColor = [System.Drawing.Color]::FromArgb(251, 247, 238)
 $btnOpenKiosk.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnOpenKiosk.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(65, 75, 100)
 $btnOpenKiosk.Location = New-Object System.Drawing.Point(22, 348)
-$btnOpenKiosk.Size = New-Object System.Drawing.Size(272, 42)
+$btnOpenKiosk.Size = New-Object System.Drawing.Size(176, 42)
 $btnOpenKiosk.Cursor = [System.Windows.Forms.Cursors]::Hand
 $form.Controls.Add($btnOpenKiosk)
 
 # Button 5: Local Admin Dashboard
 $btnOpenAdmin = New-Object System.Windows.Forms.Button
-$btnOpenAdmin.Text = "Local Admin Dashboard (Port 8000)"
-$btnOpenAdmin.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
+$btnOpenAdmin.Text = "Admin Portal"
+$btnOpenAdmin.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $btnOpenAdmin.BackColor = [System.Drawing.Color]::FromArgb(33, 38, 52)
 $btnOpenAdmin.ForeColor = [System.Drawing.Color]::FromArgb(255, 234, 167)
 $btnOpenAdmin.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnOpenAdmin.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(65, 75, 100)
-$btnOpenAdmin.Location = New-Object System.Drawing.Point(310, 348)
-$btnOpenAdmin.Size = New-Object System.Drawing.Size(272, 42)
+$btnOpenAdmin.Location = New-Object System.Drawing.Point(206, 348)
+$btnOpenAdmin.Size = New-Object System.Drawing.Size(176, 42)
 $btnOpenAdmin.Cursor = [System.Windows.Forms.Cursors]::Hand
 $form.Controls.Add($btnOpenAdmin)
+
+# Button 6: ESP32 Hardware Simulator
+$btnOpenSim = New-Object System.Windows.Forms.Button
+$btnOpenSim.Text = "ESP32 Simulator"
+$btnOpenSim.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnOpenSim.BackColor = [System.Drawing.Color]::FromArgb(20, 35, 60)
+$btnOpenSim.ForeColor = [System.Drawing.Color]::FromArgb(147, 197, 253)
+$btnOpenSim.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnOpenSim.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(59, 130, 246)
+$btnOpenSim.Location = New-Object System.Drawing.Point(390, 348)
+$btnOpenSim.Size = New-Object System.Drawing.Size(192, 42)
+$btnOpenSim.Cursor = [System.Windows.Forms.Cursors]::Hand
+$form.Controls.Add($btnOpenSim)
 
 # -------------------------------------------------------------
 # 5. Live Activity Telemetry Terminal
@@ -264,10 +277,12 @@ if (Get-Process "mysqld" -ErrorAction SilentlyContinue) {
 }
 
 # 2. Start PHP Built-in Server in Hidden Window
-Add-Log "Launching PHP server on 127.0.0.1:8000..."
+$appRoot = $PSScriptRoot
+if (-not $appRoot) { $appRoot = (Get-Location).Path }
+Add-Log "Launching PHP server on 0.0.0.0:8000 from $appRoot..."
 $phpPsi = New-Object System.Diagnostics.ProcessStartInfo
 $phpPsi.FileName = "C:\xampp\php\php.exe"
-$phpPsi.Arguments = "-S 127.0.0.1:8000 -t c:\Coding\EcoPoints\penpoint"
+$phpPsi.Arguments = "-S 0.0.0.0:8000 -t `"$appRoot`""
 $phpPsi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
 $phpPsi.CreateNoWindow = $true
 $phpPsi.UseShellExecute = $false
@@ -282,51 +297,65 @@ try {
     Add-Log "Failed to launch PHP: $_"
 }
 
-# 3. Start Cloudflare in Hidden Window
-Add-Log "Connecting to Cloudflare edge tunnel..."
-$cfPsi = New-Object System.Diagnostics.ProcessStartInfo
-$cfPsi.FileName = "C:\xampp\cloudflared.exe"
-$cfPsi.Arguments = "tunnel --logfile `"$logFile`" --url http://127.0.0.1:8000"
-$cfPsi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
-$cfPsi.CreateNoWindow = $true
-$cfPsi.UseShellExecute = $false
-try {
-    $cfProcess = [System.Diagnostics.Process]::Start($cfPsi)
-    Add-Log "Cloudflare tunnel process started. Negotiating domain..."
-} catch {
-    $lblCloudflare.Text = "[ERR] Cloudflare: Error starting executable"
-    $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(231, 76, 60)
+# 3. Start Cloudflare in Hidden Window (Optional remote tunnel)
+$cfBin = $null
+if (Test-Path "C:\xampp\cloudflared.exe") {
+    $cfBin = "C:\xampp\cloudflared.exe"
+} elseif (Get-Command cloudflared -ErrorAction SilentlyContinue) {
+    $cfBin = (Get-Command cloudflared).Source
 }
 
-# Timer to poll for Cloudflare URL
-$timer = New-Object System.Windows.Forms.Timer
-$timer.Interval = 800
-$pollCount = 0
+if ($cfBin) {
+    Add-Log "Connecting to Cloudflare edge tunnel..."
+    $cfPsi = New-Object System.Diagnostics.ProcessStartInfo
+    $cfPsi.FileName = $cfBin
+    $cfPsi.Arguments = "tunnel --logfile `"$logFile`" --url http://127.0.0.1:8000"
+    $cfPsi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+    $cfPsi.CreateNoWindow = $true
+    $cfPsi.UseShellExecute = $false
+    try {
+        $cfProcess = [System.Diagnostics.Process]::Start($cfPsi)
+        Add-Log "Cloudflare tunnel process started. Negotiating domain..."
+    } catch {
+        $lblCloudflare.Text = "[ERR] Cloudflare: Error starting executable"
+        $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(231, 76, 60)
+    }
 
-$timer.Add_Tick({
-    $script:pollCount++
-    if (Test-Path $logFile) {
-        $content = Get-Content $logFile -ErrorAction SilentlyContinue
-        $match = $content | Select-String -Pattern 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
-        if ($match) {
-            $script:rawBaseUrl = $match.Matches.Value
-            $txtUrl.Text = "$script:rawBaseUrl/public/index.php"
-            $lblCloudflare.Text = "[OK] Cloudflare Public Tunnel: Connected & Active"
-            $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(46, 204, 113)
-            Add-Log "Assigned Cloudflare Domain: $script:rawBaseUrl"
-            [System.Windows.Forms.Clipboard]::SetText("$script:rawBaseUrl/public/index.php")
-            Add-Log "Public Kiosk URL copied to clipboard automatically!"
+    # Timer to poll for Cloudflare URL
+    $timer = New-Object System.Windows.Forms.Timer
+    $timer.Interval = 800
+    $pollCount = 0
+
+    $timer.Add_Tick({
+        $script:pollCount++
+        if (Test-Path $logFile) {
+            $content = Get-Content $logFile -ErrorAction SilentlyContinue
+            $match = $content | Select-String -Pattern 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
+            if ($match) {
+                $script:rawBaseUrl = $match.Matches.Value
+                $txtUrl.Text = "$script:rawBaseUrl/public/index.php"
+                $lblCloudflare.Text = "[OK] Cloudflare Public Tunnel: Connected & Active"
+                $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(46, 204, 113)
+                Add-Log "Assigned Cloudflare Domain: $script:rawBaseUrl"
+                [System.Windows.Forms.Clipboard]::SetText("$script:rawBaseUrl/public/index.php")
+                Add-Log "Public Kiosk URL copied to clipboard automatically!"
+                $timer.Stop()
+            }
+        }
+        if ($script:pollCount -ge 20) {
             $timer.Stop()
+            if ($txtUrl.Text -eq "Negotiating Cloudflare edge endpoint...") {
+                $txtUrl.Text = "Connection taking longer than usual. Retrying..."
+            }
         }
-    }
-    if ($script:pollCount -ge 20) {
-        $timer.Stop()
-        if ($txtUrl.Text -eq "Negotiating Cloudflare edge endpoint...") {
-            $txtUrl.Text = "Connection taking longer than usual. Retrying..."
-        }
-    }
-})
-$timer.Start()
+    })
+    $timer.Start()
+} else {
+    $lblCloudflare.Text = "[INFO] Cloudflare Tunnel: Standby (Local Mode Active)"
+    $lblCloudflare.ForeColor = [System.Drawing.Color]::FromArgb(155, 166, 190)
+    $txtUrl.Text = "http://127.0.0.1:8000/public/index.php"
+    Add-Log "cloudflared not detected. System operating in local mode."
+}
 
 # Button Actions (5 Buttons Total)
 $btnCopyUrl.Add_Click({
@@ -361,6 +390,10 @@ $btnOpenKiosk.Add_Click({
 
 $btnOpenAdmin.Add_Click({
     [System.Diagnostics.Process]::Start("http://127.0.0.1:8000/admin/index.php")
+})
+
+$btnOpenSim.Add_Click({
+    [System.Diagnostics.Process]::Start("http://127.0.0.1:8000/public/esp32_simulator.php")
 })
 
 $btnStopExit.Add_Click({

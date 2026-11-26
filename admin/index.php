@@ -54,7 +54,7 @@ if (time() - $_SESSION['last_attempt_time'] > 600) {
     $_SESSION['login_attempts'] = 0;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
     // Validate CSRF token
     $submittedCsrf = $_POST['csrf_token'] ?? '';
     if (!hash_equals($_SESSION['csrf_token'], $submittedCsrf)) {

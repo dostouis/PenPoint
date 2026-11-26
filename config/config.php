@@ -18,6 +18,8 @@ define('INSTITUTION_NAME', 'University of Makati — College of Computing and In
 define('CURRENCY_SYMBOL', '₱');
 define('CURRENCY_CODE', 'PHP');
 define('DEFAULT_MACHINE_ID', 'PEN-01');
+define('DEFAULT_ESP32_IP', '192.168.254.128');
+define('DEFAULT_ESP32_PORT', 80);
 
 // Team Members (Official Order from Chapter 1)
 define('PROJECT_MEMBERS', [
